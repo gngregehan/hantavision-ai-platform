@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 
 from .config import settings
 from .datastore import pdf_analysis, pdf_user, public_user, store
+from .research_registry import assistant_reply, evidence_payload
 from .security import create_access_token, decode_access_token, oauth2_scheme, verify_password
 from .services.pdf import build_analysis_pdf
 from .services.pipeline import pipeline
@@ -36,6 +37,11 @@ class RegisterPayload(BaseModel):
 class LoginPayload(BaseModel):
     email: str
     password: str
+
+
+class AssistantPayload(BaseModel):
+    message: str = Field(min_length=1, max_length=1000)
+    context: dict | None = None
 
 
 def get_current_user(token: str = Depends(oauth2_scheme)) -> dict:
@@ -143,9 +149,30 @@ def model_stack() -> dict:
     return {"modelStack": pipeline.model_stack}
 
 
+@app.get("/api/research/evidence")
+def research_evidence() -> dict:
+    return evidence_payload()
+
+
+@app.post("/api/assistant/chat")
+def assistant_chat(payload: AssistantPayload) -> dict:
+    return assistant_reply(payload.message, payload.context)
+
+
 @app.get("/api/admin/model-performance")
 def model_performance(_: dict = Depends(require_admin)) -> dict:
-    return pipeline.performance_card()
+    evidence = evidence_payload()
+    return {
+        "registryStatus": evidence["honestyNotice"],
+        "lastValidationRun": evidence["updatedAt"],
+        "datasets": evidence["datasets"] + evidence["referenceMedia"],
+        "models": evidence["models"],
+        "metrics": {"accuracy": None, "precision": None, "recall": None, "f1": None, "auroc": None},
+        "confusionMatrix": [],
+        "rocCurve": [],
+        "validationProtocol": evidence["validationProtocol"],
+        "modelStack": pipeline.model_stack,
+    }
 
 
 @app.get("/api/admin/overview")
