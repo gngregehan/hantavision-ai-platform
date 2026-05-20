@@ -5,6 +5,7 @@ from pathlib import Path
 class Settings:
     api_title = os.getenv("API_TITLE", "HantaVision AI Clinical Imaging API")
     secret_key = os.getenv("SECRET_KEY", "change-this-secret-before-production")
+    database_backend = os.getenv("DATABASE_BACKEND", "sql").strip().lower()
     database_url = os.getenv("DATABASE_URL", "sqlite:///./storage/hantavision.db")
     upload_dir = Path(os.getenv("UPLOAD_DIR", "./storage/uploads"))
     max_upload_mb = int(os.getenv("MAX_UPLOAD_MB", "12"))
@@ -19,6 +20,10 @@ class Settings:
     ]
     admin_email = os.getenv("ADMIN_EMAIL", "admin@hantavision.local")
     admin_password = os.getenv("ADMIN_PASSWORD", "ChangeMe!2026")
+    firebase_project_id = os.getenv("FIREBASE_PROJECT_ID", "").strip()
+    firebase_service_account_json = os.getenv("FIREBASE_SERVICE_ACCOUNT_JSON", "").strip()
+    firebase_service_account_path = os.getenv("FIREBASE_SERVICE_ACCOUNT_PATH", "").strip()
+    firebase_collection_prefix = os.getenv("FIREBASE_COLLECTION_PREFIX", "").strip()
     allowed_extensions = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tif", ".tiff"}
     allowed_content_types = {
         "image/jpeg",
