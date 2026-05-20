@@ -15,7 +15,11 @@ services:
       context: ./backend
     environment:
       SECRET_KEY: ${SECRET_KEY:-replace-this-before-production}
+      DATABASE_BACKEND: ${DATABASE_BACKEND:-auto}
       DATABASE_URL: postgresql+psycopg://hantavision:hantavision@db:5432/hantavision
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:-}
+      FIREBASE_SERVICE_ACCOUNT_JSON: ${FIREBASE_SERVICE_ACCOUNT_JSON:-}
+      FIREBASE_COLLECTION_PREFIX: ${FIREBASE_COLLECTION_PREFIX:-hantavision_}
       UPLOAD_DIR: /app/storage/uploads
       CORS_ORIGINS: http://localhost:5173,http://localhost:8080,http://127.0.0.1:5173
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@hantavision.local}
