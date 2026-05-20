@@ -1,0 +1,40 @@
+services:
+  - type: web
+    name: hantavision-ai-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /api/health
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        value: sqlite:///./storage/hantavision.db
+      - key: UPLOAD_DIR
+        value: ./storage/uploads
+      - key: MAX_UPLOAD_MB
+        value: '12'
+      - key: ACCESS_TOKEN_MINUTES
+        value: '720'
+      - key: CORS_ORIGINS
+        value: https://hantavision-ai-frontend.onrender.com
+      - key: ADMIN_EMAIL
+        value: admin@hantavision.local
+      - key: ADMIN_PASSWORD
+        value: ChangeMe!2026
+
+  - type: web
+    name: hantavision-ai-frontend
+    runtime: static
+    plan: free
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://hantavision-ai-api.onrender.com
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
