@@ -9,6 +9,9 @@ class Settings:
     database_url = os.getenv("DATABASE_URL", "sqlite:///./storage/hantavision.db")
     upload_dir = Path(os.getenv("UPLOAD_DIR", "./storage/uploads"))
     max_upload_mb = int(os.getenv("MAX_UPLOAD_MB", "12"))
+    model_manifest_path = Path(os.getenv("MODEL_MANIFEST_PATH", "./models/model_manifest.json"))
+    model_artifact_dir = Path(os.getenv("MODEL_ARTIFACT_DIR", "./models"))
+    strict_model_mode = os.getenv("STRICT_MODEL_MODE", "true").strip().lower() in {"1", "true", "yes", "on"}
     access_token_minutes = int(os.getenv("ACCESS_TOKEN_MINUTES", "720"))
     cors_origins = [
         origin.strip()

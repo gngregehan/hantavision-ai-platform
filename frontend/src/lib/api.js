@@ -73,6 +73,10 @@ export function getResearchEvidence() {
   return request('/api/research/evidence');
 }
 
+export function getModelStatus() {
+  return request('/api/model-status');
+}
+
 export function assistantChat(payload) {
   return request('/api/assistant/chat', { method: 'POST', body: payload });
 }

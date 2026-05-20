@@ -68,7 +68,12 @@ def startup_event() -> None:
 
 @app.get("/api/health")
 def health() -> dict:
-    return {"status": "ok", "service": settings.api_title, "database": store.backend}
+    return {
+        "status": "ok",
+        "service": settings.api_title,
+        "database": store.backend,
+        "modelReady": pipeline.status()["acceptsUploads"],
+    }
 
 
 @app.post("/api/auth/register")
@@ -149,6 +154,11 @@ def model_stack() -> dict:
     return {"modelStack": pipeline.model_stack}
 
 
+@app.get("/api/model-status")
+def model_status() -> dict:
+    return pipeline.status()
+
+
 @app.get("/api/research/evidence")
 def research_evidence() -> dict:
     return evidence_payload()
@@ -162,16 +172,18 @@ def assistant_chat(payload: AssistantPayload) -> dict:
 @app.get("/api/admin/model-performance")
 def model_performance(_: dict = Depends(require_admin)) -> dict:
     evidence = evidence_payload()
+    performance = pipeline.performance_card()
     return {
-        "registryStatus": evidence["honestyNotice"],
-        "lastValidationRun": evidence["updatedAt"],
+        "registryStatus": performance["registryStatus"],
+        "lastValidationRun": performance["lastValidationRun"],
         "datasets": evidence["datasets"] + evidence["referenceMedia"],
         "models": evidence["models"],
-        "metrics": {"accuracy": None, "precision": None, "recall": None, "f1": None, "auroc": None},
-        "confusionMatrix": [],
-        "rocCurve": [],
+        "metrics": performance["metrics"],
+        "confusionMatrix": performance["confusionMatrix"],
+        "rocCurve": performance["rocCurve"],
         "validationProtocol": evidence["validationProtocol"],
         "modelStack": pipeline.model_stack,
+        "runtime": performance["runtime"],
     }
 
 

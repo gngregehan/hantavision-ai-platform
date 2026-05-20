@@ -9,4 +9,10 @@ backend/storage/uploads/*
 backend/storage/*.db
 backend/storage/*.db-*
 backend/storage/test-*
+data/
+models/
+ml/runs/
+*.pt
+*.pth
+*.onnx
 !.gitkeep

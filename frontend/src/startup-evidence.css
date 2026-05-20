@@ -107,6 +107,55 @@
   border-top: 1px solid rgba(105, 229, 255, 0.14);
 }
 
+.model-gate {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  margin-bottom: 18px;
+  padding: 16px;
+  border: 1px solid rgba(255, 209, 102, 0.32);
+  border-radius: 8px;
+  background: rgba(82, 54, 12, 0.24);
+}
+
+.model-gate.ready {
+  border-color: rgba(73, 255, 190, 0.32);
+  background: rgba(9, 76, 55, 0.24);
+}
+
+.model-gate > svg {
+  width: 1.8rem;
+  height: 1.8rem;
+  color: #ffd166;
+}
+
+.model-gate.ready > svg {
+  color: #49ffbe;
+}
+
+.model-gate span {
+  display: block;
+  color: #63e7ff;
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.model-gate strong {
+  display: block;
+  margin-top: 3px;
+  color: #ffffff;
+  font-size: 1.12rem;
+}
+
+.model-gate p,
+.model-gate small {
+  display: block;
+  margin: 8px 0 0;
+  color: #c4dbe8;
+  line-height: 1.5;
+}
+
 .evidence-heading {
   display: grid;
   gap: 6px;

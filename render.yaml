@@ -33,6 +33,12 @@ services:
         value: ./storage/uploads
       - key: MAX_UPLOAD_MB
         value: '12'
+      - key: MODEL_MANIFEST_PATH
+        value: ./models/model_manifest.json
+      - key: MODEL_ARTIFACT_DIR
+        value: ./models
+      - key: STRICT_MODEL_MODE
+        value: 'true'
       - key: ACCESS_TOKEN_MINUTES
         value: '720'
       - key: CORS_ORIGINS

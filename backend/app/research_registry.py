@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 
-UPDATED_AT = "2026-05-20"
+UPDATED_AT = "2026-05-21"
 
 
 HANTAVIRUS_DATASETS: list[dict[str, Any]] = [
@@ -72,6 +72,35 @@ REFERENCE_MEDIA: list[dict[str, Any]] = [
 ]
 
 
+AUXILIARY_DATASETS: list[dict[str, Any]] = [
+    {
+        "id": "kaggle-hantavirus-search",
+        "name": "Kaggle hantavirus dataset search",
+        "source": "Kaggle Datasets",
+        "url": "https://www.kaggle.com/datasets?search=hantavirus",
+        "modality": "dataset discovery",
+        "labelSignal": "No verified public hantavirus-specific clinical image benchmark found in the current search.",
+        "trainingSuitability": (
+            "Do not use as evidence until a dataset slug is manually verified to contain hantavirus image labels."
+        ),
+        "status": "manual-verification-required",
+    },
+    {
+        "id": "zenodo-irodent-8250392",
+        "name": "iRodent: keypoint and segmentation dataset of rodents in the wild",
+        "source": "Zenodo / EPFL",
+        "url": "https://zenodo.org/records/8250392",
+        "doi": "10.5281/zenodo.8250392",
+        "modality": "rodent photographs with segmentation/keypoints",
+        "labelSignal": "Rodent species and segmentation labels; not hantavirus infection labels.",
+        "trainingSuitability": (
+            "Optional auxiliary data for rodent-host detection only. It cannot train a hantavirus diagnosis model."
+        ),
+        "status": "auxiliary-only",
+    },
+]
+
+
 MODEL_VALIDATION: list[dict[str, Any]] = [
     {
         "id": "hantacell-cnn-baseline",
@@ -130,6 +159,7 @@ VALIDATION_PROTOCOL: list[str] = [
     "Train CNN, ResNet-50, and EfficientNet-B0 with identical splits.",
     "Report accuracy, precision, recall, F1, AUROC, confusion matrix, and Grad-CAM review notes.",
     "Keep the platform in education/research mode until an expert-reviewed validation report exists.",
+    "Install a validated model_manifest.json and approved artifact before enabling upload predictions.",
 ]
 
 
@@ -171,6 +201,18 @@ BIBLIOGRAPHY: list[dict[str, str]] = [
         "note": "Reference reservoir-host media.",
     },
     {
+        "title": "Kaggle Datasets search",
+        "publisher": "Kaggle",
+        "url": "https://www.kaggle.com/datasets?search=hantavirus",
+        "note": "Checked as a possible source; no verified hantavirus-specific clinical image benchmark is claimed without manual dataset-slug validation.",
+    },
+    {
+        "title": "iRodent: a keypoint and segmentation dataset of rodents in the wild",
+        "publisher": "Zenodo",
+        "url": "https://zenodo.org/records/8250392",
+        "note": "Auxiliary rodent visual dataset; useful for host image routing, not infection diagnosis.",
+    },
+    {
         "title": "Clinician Brief: Hantavirus Pulmonary Syndrome",
         "publisher": "CDC",
         "url": "https://www.cdc.gov/hantavirus/hcp/clinical-overview/hps.html",
@@ -185,13 +227,14 @@ def evidence_payload() -> dict[str, Any]:
         "mode": "Hantavirus-only evidence mode",
         "datasets": HANTAVIRUS_DATASETS,
         "referenceMedia": REFERENCE_MEDIA,
+        "auxiliaryDatasets": AUXILIARY_DATASETS,
         "models": MODEL_VALIDATION,
         "validationProtocol": VALIDATION_PROTOCOL,
         "bibliography": BIBLIOGRAPHY,
         "honestyNotice": (
             "Public, balanced, clinical-grade hantavirus image benchmarks and validated pretrained "
-            "CNN/ResNet/EfficientNet models were not found. The platform therefore marks metrics as "
-            "pending until the listed hantavirus-only sources are curated and trained."
+            "CNN/ResNet/EfficientNet models were not found. The API now blocks placeholder predictions "
+            "until the listed sources are curated, trained, validated, and installed as a model artifact."
         ),
         "generatedAt": datetime.now(timezone.utc).isoformat(),
     }
@@ -208,7 +251,8 @@ def assistant_reply(message: str, context: dict[str, Any] | None = None) -> dict
         reply = (
             "Bu platformda sadece hantavirus iliskili kaynaklar listeleniyor: Zenodo infected-cell "
             "microscopy seti ana egitim adayi, Dryad SEOV/HTNV verisi destekleyici kaynak, CDC PHIL "
-            "gorselleri ise referans medya. CDC PHIL tek basina egitim seti degil."
+            "gorselleri ise referans medya. Kaggle sonucu dogrulanmis hanta etiketli klinik gorsel "
+            "seti olarak kullanilmiyor; dataset slug'i elle kanitlanmadan egitime alinmaz."
         )
     elif any(word in text for word in ["metrik", "accuracy", "dogrulama", "doğrulama", "basari", "başarı"]):
         reply = (

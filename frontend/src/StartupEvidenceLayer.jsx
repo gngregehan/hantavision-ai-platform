@@ -10,13 +10,14 @@ import {
   ShieldCheck,
   X,
 } from 'lucide-react';
-import { assistantChat, getResearchEvidence } from './lib/api';
+import { assistantChat, getModelStatus, getResearchEvidence } from './lib/api';
 
 const fallbackEvidence = {
   mode: 'Hantavirus-only evidence mode',
   honestyNotice: 'Kaynak kayıt sistemi yükleniyor. Klinik doğrulama metrikleri gerçek eğitim çıktısı olmadan gösterilmez.',
   datasets: [],
   referenceMedia: [],
+  auxiliaryDatasets: [],
   models: [],
   validationProtocol: [],
   bibliography: [],
@@ -34,6 +35,7 @@ function metricValue(value) {
 
 export default function StartupEvidenceLayer() {
   const [evidence, setEvidence] = useState(fallbackEvidence);
+  const [modelStatus, setModelStatus] = useState(null);
   const [open, setOpen] = useState(false);
   const [question, setQuestion] = useState('Dataset ve metrikler gerçek mi?');
   const [answer, setAnswer] = useState('Sorunu dataset, model, metrik veya risk olarak sorabilirsin. Yanıtlar hantavirüs kaynak kayıt sistemine göre verilir.');
@@ -43,14 +45,17 @@ export default function StartupEvidenceLayer() {
     getResearchEvidence()
       .then((payload) => setEvidence({ ...fallbackEvidence, ...payload }))
       .catch(() => setEvidence(fallbackEvidence));
+    getModelStatus()
+      .then(setModelStatus)
+      .catch(() => setModelStatus(null));
   }, []);
 
   const registryStats = useMemo(() => [
     { label: 'Hantavirus Dataset', value: evidence.datasets.length || '2+', icon: Database },
     { label: 'Model Adayı', value: evidence.models.length || '3', icon: BrainCircuit },
-    { label: 'Validation Metrics', value: 'Pending', icon: LineChart },
-    { label: 'Source Mode', value: 'Hanta-only', icon: ShieldCheck },
-  ], [evidence]);
+    { label: 'Validation Metrics', value: modelStatus?.runtime?.ready ? 'Loaded' : 'Pending', icon: LineChart },
+    { label: 'Prediction Gate', value: modelStatus?.acceptsUploads ? 'Open' : 'Locked', icon: ShieldCheck },
+  ], [evidence, modelStatus]);
 
   async function askAssistant(event) {
     event.preventDefault();
@@ -90,6 +95,16 @@ export default function StartupEvidenceLayer() {
               <strong>{value}</strong>
             </article>
           ))}
+        </div>
+
+        <div className={`model-gate ${modelStatus?.acceptsUploads ? 'ready' : 'locked'}`}>
+          <ShieldCheck />
+          <div>
+            <span>Production inference gate</span>
+            <strong>{modelStatus?.acceptsUploads ? 'Validated model installed' : 'Validated model required'}</strong>
+            <p>{modelStatus?.predictionPolicy || 'Upload predictions are blocked until the API confirms a validated model artifact.'}</p>
+            <small>{modelStatus?.runtime?.reason || 'Model status endpoint is loading.'}</small>
+          </div>
         </div>
 
         <div className='evidence-board'>
@@ -165,6 +180,22 @@ export default function StartupEvidenceLayer() {
               ))}
             </ol>
           </article>
+        </div>
+
+        <div className='evidence-board'>
+          <div className='evidence-heading'>
+            <p>Kaggle / auxiliary discovery</p>
+            <h3>HantavirÃ¼s dÄ±ÅŸÄ± kaynaklar sadece yardÄ±mcÄ±</h3>
+          </div>
+          <div className='source-registry-grid'>
+            {evidence.auxiliaryDatasets.map((dataset) => (
+              <a href={dataset.url} target='_blank' rel='noreferrer' key={dataset.id}>
+                <span>{statusLabel(dataset.status)}</span>
+                <strong>{dataset.name}</strong>
+                <small>{dataset.trainingSuitability}</small>
+              </a>
+            ))}
+          </div>
         </div>
 
         <div className='evidence-board' id='sources'>

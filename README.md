@@ -9,7 +9,7 @@ Profesyonel, yapay zeka destekli Hantavirüs ilişki analizi için React + FastA
 - React/Vite tabanlı modern medikal dashboard
 - JWT ile giriş/kayıt, admin paneli ve analiz geçmişi
 - Güvenli dosya yükleme, format/size doğrulama ve görüntü kalite kontrolü
-- Çok aşamalı model orkestrasyonu: görsel türü sınıflandırma, medikal analiz, kemirgen tespiti, mikroskop/doku analizi, Hantavirüs ilişki sınıflandırması, ROI açıklanabilirlik
+- Çok aşamalı model orkestrasyonu: görsel türü sınıflandırma, kalite kontrolü, validasyonlu CNN/ResNet/EfficientNet artefact ile Hantavirüs ilişki sınıflandırması, ROI açıklanabilirlik
 - Görsel türü, Hantavirüs sonucu, güven skoru, güvenilirlik, kalite, risk seviyesi, uyarılar ve PDF rapor çıktısı
 - Esnek veritabanı katmanı: SQLite/PostgreSQL veya Firebase Cloud Firestore
 - Docker destekli dağıtım yapısı
@@ -17,6 +17,27 @@ Profesyonel, yapay zeka destekli Hantavirüs ilişki analizi için React + FastA
 ## Güvenlik ve Klinik Not
 
 Bu sistem tıbbi karar destek platformu olarak tasarlanmıştır. Üretilen sonuçlar kesin tıbbi teşhis değildir ve uzman değerlendirmesi gerektirir.
+
+## Profesyonel Model Kapısı
+
+Demo/heuristic tıbbi tahmin kapatılmıştır. API, `MODEL_MANIFEST_PATH` ile gösterilen onaylı bir `model_manifest.json` ve model artefact'i bulunmadan kullanıcı görsellerine risk sonucu üretmez. Bu sayede sahte accuracy, sahte risk skoru veya gerçek olmayan Grad-CAM çıktısı yayınlanmaz.
+
+Gerçek model akışı:
+
+```bash
+python ml/download_sources.py --execute
+python ml/curate_hantavirus_dataset.py --labels-csv data/labels/hantavirus_labels.csv --copy
+python ml/train_hantavirus_models.py --data-dir data/hantavirus --arch efficientnet_b0 --publish-dir models/hantacell --approve-for-research-use
+```
+
+Render/API ortam değişkenleri:
+
+```bash
+MODEL_MANIFEST_PATH=./models/hantacell/model_manifest.json
+STRICT_MODEL_MODE=true
+```
+
+Kaggle kaynakları sadece etiket/lisans/hantavirüs ilişkisi elle doğrulandıktan sonra yardımcı veri olarak eklenmelidir. Temiz ve halka açık hantavirüs klinik görüntü benchmark'ı bulunmadığı için site bunu kaynakçada açıkça belirtir.
 
 ## Yerel Çalıştırma
 
@@ -98,5 +119,6 @@ Deploy bağlantısı: https://render.com/deploy?repo=https://github.com/gngregeh
 - `GET /api/analyses/{analysis_id}`
 - `GET /api/analyses/{analysis_id}/report.pdf`
 - `GET /api/model-stack`
+- `GET /api/model-status`
 - `GET /api/admin/model-performance`
 - `GET /api/admin/overview`

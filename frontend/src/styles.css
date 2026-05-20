@@ -328,6 +328,7 @@ h2 { margin-bottom: 12px; font-size: 2rem; line-height: 1.08; color: #ffffff; }
 .heat-region { position: absolute; border-radius: 50%; border: 1px solid rgba(255, 221, 112, 0.78); background: radial-gradient(circle, rgba(255, 48, 48, 0.66), rgba(255, 151, 47, 0.4) 45%, transparent 72%); mix-blend-mode: screen; animation: heatPulse 2.1s ease-in-out infinite; }
 .scan-beam { position: absolute; left: 0; right: 0; top: -16%; height: 18%; background: linear-gradient(180deg, transparent, rgba(89, 244, 255, 0.48), transparent); opacity: 0; }
 .image-scan.is-scanning .scan-beam { opacity: 1; animation: scanDown 1.35s linear infinite; }
+.heatmap-note { margin: 12px 0 0; color: #9fbccc; line-height: 1.5; font-weight: 800; }
 
 .message {
   margin: 16px 0 0;

@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 import {
   downloadReport,
+  getModelStatus,
   getOverview,
   getPerformance,
   listAnalyses,
@@ -173,6 +174,7 @@ function App() {
   const [history, setHistory] = useState([]);
   const [overview, setOverview] = useState(null);
   const [performance, setPerformance] = useState(null);
+  const [modelStatus, setModelStatus] = useState(null);
   const [loading, setLoading] = useState(false);
   const [activeStep, setActiveStep] = useState(-1);
   const [progress, setProgress] = useState(0);
@@ -187,12 +189,13 @@ function App() {
   const latest = useMemo(() => result || history[0], [result, history]);
   const inferred = useMemo(() => inferImageType(file), [file]);
   const displayedImageType = normalizeImageType(latest?.imageType || inferred.label);
-  const selectedModel = modelForType(displayedImageType);
-  const modelArchitecture = architectureForType(displayedImageType);
+  const installedArchitecture = modelStatus?.runtime?.manifest?.architecture;
+  const selectedModel = installedArchitecture ? `Validated ${installedArchitecture}` : modelForType(displayedImageType);
+  const modelArchitecture = installedArchitecture || architectureForType(displayedImageType);
   const totalAnalyses = overview?.totalAnalyses ?? history.length;
   const avgConfidence = history.length
     ? history.reduce((sum, item) => sum + (Number(item.confidence) || 0), 0) / history.length
-    : Number(latest?.confidence) || 0.87;
+    : Number(latest?.confidence) || 0;
 
   useEffect(() => {
     const timer = window.setTimeout(() => setBooting(false), 2200);
@@ -215,6 +218,10 @@ function App() {
   }, [session?.accessToken, isAdmin]);
 
   useEffect(() => {
+    getModelStatus().then(setModelStatus).catch(() => setModelStatus(null));
+  }, []);
+
+  useEffect(() => {
     if (!loading) return undefined;
     setActiveStep(0);
     setProgress(8);
@@ -233,6 +240,7 @@ function App() {
         setOverview(await getOverview(token));
         setPerformance(await getPerformance(token));
       }
+      setModelStatus(await getModelStatus());
     } catch (error) {
       setMessage(error.message);
     }
@@ -337,7 +345,9 @@ function App() {
     if (question.includes('risk')) {
       setAssistantAnswer(`Bu analizde risk durumu ${riskLabel(latest)}. Güven skoru ${formatPercent(latest?.confidence || avgConfidence)} ve sonuç uzman değerlendirmesiyle doğrulanmalı.`);
     } else if (question.includes('model') || question.includes('nasıl')) {
-      setAssistantAnswer(`${selectedModel}, görüntü türüne göre seçildi. Ön işleme, özellik çıkarımı, sınıflandırma ve Grad-CAM dikkat haritası birlikte kullanılır.`);
+      setAssistantAnswer(modelStatus?.acceptsUploads
+        ? `${selectedModel}, yüklü validasyonlu artefact üzerinden çalışır. Ön işleme, sınıflandırma ve artefact destekliyorsa Grad-CAM birlikte raporlanır.`
+        : 'Profesyonel mod aktif: validasyonlu model artefact yüklenmeden sistem kullanıcı görseline risk sonucu üretmez. Önce etiketli hantavirüs verisiyle eğitim ve test metrikleri gerekiyor.');
     } else if (question.includes('tanı')) {
       setAssistantAnswer('Bu sistem kesin tıbbi tanı koymaz. Çıktı yalnızca ön değerlendirme ve eğitim amaçlıdır; kesin tanı için uzman hekime başvurulmalıdır.');
     } else {
@@ -350,7 +360,7 @@ function App() {
     { label: 'Aktif AI Modeli', value: selectedModel, icon: BrainCircuit },
     { label: 'Ortalama Güven Skoru', value: formatPercent(avgConfidence), icon: Gauge },
     { label: 'Desteklenen Görsel Türü', value: '5 sınıf', icon: Layers3 },
-    { label: 'Sistem Durumu', value: 'Online', icon: Activity },
+    { label: 'Sistem Durumu', value: modelStatus?.acceptsUploads ? 'Validated' : 'Model gerekli', icon: Activity },
   ];
 
   return (
@@ -633,7 +643,7 @@ function HeroVisual() {
       <div className='system-status'>
         <span><CheckCircle2 />AI Core: Active</span>
         <span><CheckCircle2 />Medical Vision Engine: Online</span>
-        <span><CheckCircle2 />Grad-CAM: Ready</span>
+        <span><CheckCircle2 />Validated Model Gate: Strict</span>
       </div>
     </div>
   );
@@ -661,15 +671,15 @@ function AnalysisProgress({ loading, progress, activeStep }) {
       <div className='terminal-lines'>
         <span>Image preprocessing...</span>
         <span>Feature extraction...</span>
-        <span>CNN model running...</span>
-        <span>Risk score generating...</span>
+        <span>Validated model gate...</span>
+        <span>Metrics-backed report check...</span>
       </div>
     </article>
   );
 }
 
 function HeatmapPreview({ file, previewUrl, result, inferred, loading }) {
-  const regions = result?.attention?.regions?.length ? result.attention.regions : syntheticRegions(inferred.route);
+  const regions = result?.attention?.regions?.length ? result.attention.regions : [];
   return (
     <article className='heatmap-panel'>
       <div className='panel-title'>
@@ -693,6 +703,7 @@ function HeatmapPreview({ file, previewUrl, result, inferred, loading }) {
         </div>
         <i className='scan-beam' />
       </div>
+      {!regions.length && <p className='heatmap-note'>{file ? 'Gerçek Grad-CAM alanı validasyonlu model sonucu gelince gösterilir.' : 'Görüntü ve model sonucu bekleniyor.'}</p>}
     </article>
   );
 }
@@ -708,14 +719,14 @@ function ReportPanel({ latest, displayedImageType, selectedModel, modelArchitect
         <span className={`risk-badge ${riskClass(latest)}`}>Risk Durumu: {riskLabel(latest)}</span>
       </div>
       <div className='report-metrics'>
-        <div><span>Güven Skoru</span><strong>{formatPercent(latest?.confidence || 0.87)}</strong></div>
+        <div><span>Güven Skoru</span><strong>{latest ? formatPercent(latest.confidence) : 'Beklemede'}</strong></div>
         <div><span>Görüntü Türü</span><strong>{displayedImageType}</strong></div>
         <div><span>Model</span><strong>{modelArchitecture}</strong></div>
         <div><span>Analiz Süresi</span><strong>{latest ? '2.4 saniye' : 'Beklemede'}</strong></div>
       </div>
       <div className='explain-panel'>
         <FlaskConical />
-        <p>{latest?.explanation || 'Model, akciğer bölgesinde yoğunluk değişimi ve anormal doku örüntüleri tespit ettiği için orta risk sonucu üretebilir. Analiz tamamlandığında bu alan gerçek AI açıklamasıyla güncellenir.'}</p>
+        <p>{latest?.explanation || 'Profesyonel modda sahte bulgu üretilmez. Gerçek açıklama, validasyonlu CNN/ResNet/EfficientNet artefact yüklendikten ve analiz tamamlandıktan sonra burada gösterilir.'}</p>
       </div>
       <div className='report-actions'>
         <button type='button' className='primary-action' onClick={onDownloadPdf} disabled={!latest}><Download />AI Medical Report PDF</button>

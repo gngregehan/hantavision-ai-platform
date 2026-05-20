@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import shutil
+from datetime import datetime, timezone
 from pathlib import Path
 
 import torch
@@ -112,7 +114,9 @@ def evaluate(model: nn.Module, loader: DataLoader, device: torch.device, class_n
     model.eval()
     labels_all: list[int] = []
     preds_all: list[int] = []
+    binary_labels_all: list[int] = []
     prob_all: list[float] = []
+    positive_index = class_names.index("infected") if "infected" in class_names else min(1, len(class_names) - 1)
 
     for images, labels in loader:
         images = images.to(device)
@@ -121,21 +125,60 @@ def evaluate(model: nn.Module, loader: DataLoader, device: torch.device, class_n
         preds = torch.argmax(probs, dim=1)
         labels_all.extend(labels.tolist())
         preds_all.extend(preds.cpu().tolist())
-        prob_all.extend(probs[:, 1].cpu().tolist())
+        binary_labels_all.extend([1 if int(label) == positive_index else 0 for label in labels.tolist()])
+        prob_all.extend(probs[:, positive_index].cpu().tolist())
 
     metrics = {
-        "accuracy": accuracy_score(labels_all, preds_all),
-        "precision": precision_score(labels_all, preds_all, average="weighted", zero_division=0),
-        "recall": recall_score(labels_all, preds_all, average="weighted", zero_division=0),
-        "f1": f1_score(labels_all, preds_all, average="weighted", zero_division=0),
+        "accuracy": float(accuracy_score(labels_all, preds_all)),
+        "precision": float(precision_score(labels_all, preds_all, average="weighted", zero_division=0)),
+        "recall": float(recall_score(labels_all, preds_all, average="weighted", zero_division=0)),
+        "f1": float(f1_score(labels_all, preds_all, average="weighted", zero_division=0)),
         "confusionMatrix": confusion_matrix(labels_all, preds_all).tolist(),
         "classes": class_names,
     }
     try:
-        metrics["auroc"] = roc_auc_score(labels_all, prob_all)
+        metrics["auroc"] = float(roc_auc_score(binary_labels_all, prob_all))
     except ValueError:
         metrics["auroc"] = None
     return metrics
+
+
+def write_model_manifest(
+    run_dir: Path,
+    args: argparse.Namespace,
+    class_names: list[str],
+    test_metrics: dict[str, object],
+    best_val_f1: float,
+) -> dict[str, object]:
+    manifest = {
+        "modelId": args.model_id,
+        "architecture": args.arch,
+        "runtime": "torchvision",
+        "artifactPath": "best.pt",
+        "classes": class_names,
+        "imageSize": IMAGE_SIZE,
+        "datasetScope": "hantavirus-only curated split",
+        "trainingRunId": run_dir.name,
+        "createdAt": datetime.now(timezone.utc).isoformat(),
+        "explainability": "Grad-CAM must be generated and reviewed before clinical-style presentation.",
+        "validation": {
+            "approvedForUse": bool(args.approve_for_research_use),
+            "validatedAt": datetime.now(timezone.utc).date().isoformat(),
+            "bestValidationF1": best_val_f1,
+            "metrics": test_metrics,
+            "approvalNote": (
+                "Approved for research inference by command-line flag."
+                if args.approve_for_research_use
+                else "Not approved yet. Review labels, leakage, confusion matrix, and Grad-CAM before deployment."
+            ),
+        },
+    }
+    (run_dir / "model_manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    if args.publish_dir:
+        args.publish_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(run_dir / "best.pt", args.publish_dir / "best.pt")
+        (args.publish_dir / "model_manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    return manifest
 
 
 def main() -> None:
@@ -146,6 +189,9 @@ def main() -> None:
     parser.add_argument("--batch-size", type=int, default=16)
     parser.add_argument("--lr", type=float, default=3e-4)
     parser.add_argument("--out-dir", type=Path, default=Path("ml/runs"))
+    parser.add_argument("--model-id", default="hantacell-research-classifier")
+    parser.add_argument("--publish-dir", type=Path, help="Optional API model directory to receive best.pt and model_manifest.json.")
+    parser.add_argument("--approve-for-research-use", action="store_true", help="Mark manifest as approved after expert review.")
     args = parser.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -155,8 +201,10 @@ def main() -> None:
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-4)
 
     best_val = 0.0
-    run_dir = args.out_dir / args.arch
+    run_id = datetime.now(timezone.utc).strftime(f"{args.arch}-%Y%m%d-%H%M%S")
+    run_dir = args.out_dir / run_id
     run_dir.mkdir(parents=True, exist_ok=True)
+    best_path = run_dir / "best.pt"
 
     for epoch in range(1, args.epochs + 1):
         train_loss = run_epoch(model, loaders["train"], optimizer, device)
@@ -164,18 +212,28 @@ def main() -> None:
         val_metrics = evaluate(model, loaders["val"], device, class_names)
         if float(val_metrics["f1"]) >= best_val:
             best_val = float(val_metrics["f1"])
-            torch.save({"arch": args.arch, "classes": class_names, "state_dict": model.state_dict()}, run_dir / "best.pt")
+            torch.save({"arch": args.arch, "classes": class_names, "state_dict": model.state_dict()}, best_path)
         print(f"epoch={epoch} train_loss={train_loss:.4f} val_loss={val_loss:.4f} val_f1={val_metrics['f1']:.4f}")
 
+    checkpoint = torch.load(best_path, map_location=device)
+    model.load_state_dict(checkpoint["state_dict"])
     test_metrics = evaluate(model, loaders["test"], device, class_names)
     metrics = {
         "architecture": args.arch,
         "datasetScope": "hantavirus-only curated split",
+        "bestValidationF1": best_val,
         "metrics": test_metrics,
         "warning": "Publish only after expert review and leakage checks.",
     }
     (run_dir / "metrics.json").write_text(json.dumps(metrics, indent=2), encoding="utf-8")
+    manifest = write_model_manifest(run_dir, args, class_names, test_metrics, best_val)
+    (run_dir / "deployment_note.txt").write_text(
+        "Copy best.pt and model_manifest.json to the API model directory, then set "
+        "MODEL_MANIFEST_PATH to that model_manifest.json. Do not approve before expert review.\n",
+        encoding="utf-8",
+    )
     print(json.dumps(metrics, indent=2))
+    print(json.dumps({"manifest": manifest}, indent=2))
 
 
 if __name__ == "__main__":

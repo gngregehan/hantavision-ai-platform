@@ -1,41 +1,78 @@
 {
-  "updatedAt": "2026-05-20",
-  "scope": "hantavirus-only",
-  "datasets": [
+  "updatedAt": "2026-05-21",
+  "scope": "hantavirus-first-image-training",
+  "policy": "Only sources with explicit hantavirus relation may train the infection classifier. Kaggle and rodent datasets are auxiliary unless a verified dataset slug contains hantavirus-specific image labels.",
+  "primaryTrainingSources": [
     {
       "id": "zenodo-10417810-hantavirus-infected-cells",
       "name": "Image dataset for quantification of virus-infected cells",
       "doi": "10.5281/zenodo.10417810",
       "url": "https://zenodo.org/records/10417810",
+      "apiUrl": "https://zenodo.org/api/records/10417810",
       "modality": "fluorescence microscopy",
       "status": "curation-ready",
-      "notes": "Hantavirus-infected cells stained against viral nucleocapsid protein. Use for infected-cell classification after label curation."
+      "hantavirusRelation": "Microscopy images of hantavirus-infected cells stained against viral nucleocapsid protein.",
+      "files": [
+        "Test_dataset_CellProfiler.zip",
+        "Test_dataset_NIS_elements.zip"
+      ],
+      "allowedForTraining": true,
+      "requiresManualLabelReview": true
     },
     {
       "id": "dryad-seoul-hantaan-endothelial-imaging",
       "name": "Data from: Seoul orthohantavirus evades innate immune activation by reservoir endothelial cells",
       "doi": "10.5061/dryad.gf1vhhmzd",
       "url": "https://datadryad.org/dataset/doi:10.5061/dryad.gf1vhhmzd",
-      "modality": "immunofluorescence microscopy",
+      "modality": "immunofluorescence microscopy and raw experiment media",
       "status": "requires-label-curation",
-      "notes": "SEOV/HTNV endothelial-cell experiments; figure folders must be mapped into explicit labels before training."
+      "hantavirusRelation": "SEOV/HTNV endothelial-cell infection experiments with microscopy media.",
+      "files": [
+        "Data_repository.zip",
+        "README.md"
+      ],
+      "allowedForTraining": true,
+      "requiresManualLabelReview": true
     }
   ],
-  "referenceMedia": [
+  "referenceOnly": [
     {
       "id": "cdc-phil-6078-hps-xray",
       "url": "https://wwwn.cdc.gov/phil/Details.aspx?pid=6078",
-      "notes": "HPS chest x-ray reference media, not a balanced training dataset."
+      "notes": "HPS chest x-ray reference media, not a balanced clinical x-ray dataset.",
+      "allowedForTraining": false
     },
     {
       "id": "cdc-phil-1137-sin-nombre-tem",
       "url": "https://wwwn.cdc.gov/phil/Details.aspx?pid=1137",
-      "notes": "Sin Nombre virus electron micrograph reference media."
+      "notes": "Sin Nombre virus electron micrograph reference media.",
+      "allowedForTraining": false
     },
     {
       "id": "cdc-phil-1138-deer-mouse",
       "url": "https://wwwn.cdc.gov/phil/Details.aspx?pid=1138",
-      "notes": "Deer mouse reservoir-host reference media."
+      "notes": "Deer mouse reservoir-host reference media.",
+      "allowedForTraining": false
+    }
+  ],
+  "auxiliaryDiscovery": [
+    {
+      "id": "kaggle-hantavirus-search",
+      "name": "Kaggle hantavirus dataset search",
+      "url": "https://www.kaggle.com/datasets?search=hantavirus",
+      "status": "manual-verification-required",
+      "allowedForTraining": false,
+      "notes": "Do not train infection diagnosis on Kaggle data unless a dataset slug is manually verified to contain hantavirus-specific image labels and license approval."
+    },
+    {
+      "id": "zenodo-irodent-8250392",
+      "name": "iRodent: keypoint and segmentation dataset of rodents in the wild",
+      "doi": "10.5281/zenodo.8250392",
+      "url": "https://zenodo.org/records/8250392",
+      "apiUrl": "https://zenodo.org/api/records/8250392",
+      "status": "auxiliary-only",
+      "allowedForTraining": false,
+      "notes": "Useful for rodent-host routing/segmentation, not hantavirus infection diagnosis."
     }
   ]
 }
