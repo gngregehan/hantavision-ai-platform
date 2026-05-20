@@ -86,9 +86,13 @@ async def save_image_upload(file: UploadFile) -> SavedImage:
     today = datetime.utcnow().strftime("%Y%m%d")
     target_dir = settings.upload_dir / today
     target_dir.mkdir(parents=True, exist_ok=True)
-    filename = f"{_safe_name(file.filename or 'upload')}-{digest[:12]}{suffix}"
+    stored_suffix = ".jpg" if is_dicom else suffix
+    filename = f"{_safe_name(file.filename or 'upload')}-{digest[:12]}{stored_suffix}"
     target_path = target_dir / filename
-    target_path.write_bytes(bytes(data))
+    if is_dicom:
+        image.save(target_path, format="JPEG", quality=92)
+    else:
+        target_path.write_bytes(bytes(data))
 
     return SavedImage(
         original_name=file.filename or filename,
