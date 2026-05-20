@@ -1,0 +1,11 @@
+{
+  "name": "hantavision-ai-platform",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "frontend:dev": "npm --prefix frontend run dev",
+    "frontend:build": "npm --prefix frontend run build",
+    "frontend:preview": "npm --prefix frontend run preview",
+    "backend:dev": "uvicorn app.main:app --app-dir backend --reload --host 127.0.0.1 --port 8000"
+  }
+}
