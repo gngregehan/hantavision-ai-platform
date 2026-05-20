@@ -1,0 +1,41 @@
+{
+  "updatedAt": "2026-05-20",
+  "scope": "hantavirus-only",
+  "datasets": [
+    {
+      "id": "zenodo-10417810-hantavirus-infected-cells",
+      "name": "Image dataset for quantification of virus-infected cells",
+      "doi": "10.5281/zenodo.10417810",
+      "url": "https://zenodo.org/records/10417810",
+      "modality": "fluorescence microscopy",
+      "status": "curation-ready",
+      "notes": "Hantavirus-infected cells stained against viral nucleocapsid protein. Use for infected-cell classification after label curation."
+    },
+    {
+      "id": "dryad-seoul-hantaan-endothelial-imaging",
+      "name": "Data from: Seoul orthohantavirus evades innate immune activation by reservoir endothelial cells",
+      "doi": "10.5061/dryad.gf1vhhmzd",
+      "url": "https://datadryad.org/dataset/doi:10.5061/dryad.gf1vhhmzd",
+      "modality": "immunofluorescence microscopy",
+      "status": "requires-label-curation",
+      "notes": "SEOV/HTNV endothelial-cell experiments; figure folders must be mapped into explicit labels before training."
+    }
+  ],
+  "referenceMedia": [
+    {
+      "id": "cdc-phil-6078-hps-xray",
+      "url": "https://wwwn.cdc.gov/phil/Details.aspx?pid=6078",
+      "notes": "HPS chest x-ray reference media, not a balanced training dataset."
+    },
+    {
+      "id": "cdc-phil-1137-sin-nombre-tem",
+      "url": "https://wwwn.cdc.gov/phil/Details.aspx?pid=1137",
+      "notes": "Sin Nombre virus electron micrograph reference media."
+    },
+    {
+      "id": "cdc-phil-1138-deer-mouse",
+      "url": "https://wwwn.cdc.gov/phil/Details.aspx?pid=1138",
+      "notes": "Deer mouse reservoir-host reference media."
+    }
+  ]
+}
