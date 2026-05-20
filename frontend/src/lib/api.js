@@ -65,3 +65,20 @@ export function getPerformance(token) {
 export function getOverview(token) {
   return request('/api/admin/overview', { token });
 }
+
+export async function downloadReport(analysisId, token) {
+  const response = await fetch(`${API_BASE}/api/analyses/${analysisId}/report.pdf`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) {
+    let detail = 'PDF rapor indirilemedi.';
+    try {
+      const error = await response.json();
+      detail = error.detail || detail;
+    } catch {
+      detail = response.statusText || detail;
+    }
+    throw new Error(detail);
+  }
+  return response.blob();
+}
