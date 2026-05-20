@@ -66,6 +66,14 @@ export function getOverview(token) {
   return request('/api/admin/overview', { token });
 }
 
+export function getResearchEvidence() {
+  return request('/api/research/evidence');
+}
+
+export function assistantChat(payload) {
+  return request('/api/assistant/chat', { method: 'POST', body: payload });
+}
+
 export async function downloadReport(analysisId, token) {
   const response = await fetch(`${API_BASE}/api/analyses/${analysisId}/report.pdf`, {
     headers: { Authorization: `Bearer ${token}` },
