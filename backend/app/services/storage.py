@@ -80,7 +80,7 @@ async def save_image_upload(file: UploadFile) -> SavedImage:
             probe = Image.open(BytesIO(data))
             probe.verify()
             image = Image.open(BytesIO(data)).convert("RGB")
-        except (UnidentifiedImageError, OSError) as exc:
+        except (UnidentifiedImageError, OSError, SyntaxError) as exc:
             raise HTTPException(status_code=400, detail="Yüklenen dosya geçerli bir görüntü değil.") from exc
 
     today = datetime.utcnow().strftime("%Y%m%d")
