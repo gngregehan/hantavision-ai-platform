@@ -1,3 +1,11 @@
+databases:
+  - name: hantavision-ai-db
+    plan: free
+    databaseName: hantavision
+    user: hantavision
+    postgresMajorVersion: '17'
+    ipAllowList: []
+
 services:
   - type: web
     name: hantavision-ai-api
@@ -10,7 +18,9 @@ services:
       - key: SECRET_KEY
         generateValue: true
       - key: DATABASE_URL
-        value: sqlite:///./storage/hantavision.db
+        fromDatabase:
+          name: hantavision-ai-db
+          property: connectionString
       - key: UPLOAD_DIR
         value: ./storage/uploads
       - key: MAX_UPLOAD_MB
