@@ -127,8 +127,13 @@ function architectureForType(value) {
   return 'Expert Review Ensemble';
 }
 
+function isValidatedAnalysis(item) {
+  return Boolean(item?.metrics?.runtime?.architecture || item?.modelStack?.some((stage) => stage.runtime === 'validated'));
+}
+
 function riskLabel(item) {
   if (!item) return 'Beklemede';
+  if (!isValidatedAnalysis(item)) return 'Legacy demo';
   const risk = String(item.riskLevel || '').toLocaleLowerCase('tr-TR');
   if (risk.includes('yüksek') && Number(item.confidence) > 0.84) return 'Kritik';
   if (risk.includes('yüksek')) return 'Yüksek';
@@ -138,6 +143,7 @@ function riskLabel(item) {
 }
 
 function riskClass(item) {
+  if (item && !isValidatedAnalysis(item)) return 'unknown';
   const label = riskLabel(item).toLocaleLowerCase('tr-TR');
   if (label.includes('kritik')) return 'critical';
   if (label.includes('yüksek')) return 'high';
@@ -343,7 +349,9 @@ function App() {
     event.preventDefault();
     const question = assistantQuestion.toLocaleLowerCase('tr-TR');
     if (question.includes('risk')) {
-      setAssistantAnswer(`Bu analizde risk durumu ${riskLabel(latest)}. Güven skoru ${formatPercent(latest?.confidence || avgConfidence)} ve sonuç uzman değerlendirmesiyle doğrulanmalı.`);
+      setAssistantAnswer(isValidatedAnalysis(latest)
+        ? `Bu analizde risk durumu ${riskLabel(latest)}. Güven skoru ${formatPercent(latest?.confidence || avgConfidence)} ve sonuç uzman değerlendirmesiyle doğrulanmalı.`
+        : 'Bu kayıt eski demo döneminden kalmış olabilir. Profesyonel modda validasyonlu model artefact olmadan yeni risk sonucu üretilmez.');
     } else if (question.includes('model') || question.includes('nasıl')) {
       setAssistantAnswer(modelStatus?.acceptsUploads
         ? `${selectedModel}, yüklü validasyonlu artefact üzerinden çalışır. Ön işleme, sınıflandırma ve artefact destekliyorsa Grad-CAM birlikte raporlanır.`
@@ -709,24 +717,25 @@ function HeatmapPreview({ file, previewUrl, result, inferred, loading }) {
 }
 
 function ReportPanel({ latest, displayedImageType, selectedModel, modelArchitecture, onDownloadPdf }) {
+  const validated = isValidatedAnalysis(latest);
   return (
     <section className='report-panel'>
       <div className='report-header'>
         <div>
           <p className='eyebrow'>AI Diagnostic Report</p>
-          <h2>{latest ? latest.hantavirusResult : 'Analiz sonucu bekleniyor'}</h2>
+          <h2>{latest ? (validated ? latest.hantavirusResult : 'Legacy demo sonucu gizlendi') : 'Analiz sonucu bekleniyor'}</h2>
         </div>
         <span className={`risk-badge ${riskClass(latest)}`}>Risk Durumu: {riskLabel(latest)}</span>
       </div>
       <div className='report-metrics'>
-        <div><span>Güven Skoru</span><strong>{latest ? formatPercent(latest.confidence) : 'Beklemede'}</strong></div>
+        <div><span>Güven Skoru</span><strong>{latest ? (validated ? formatPercent(latest.confidence) : 'Legacy') : 'Beklemede'}</strong></div>
         <div><span>Görüntü Türü</span><strong>{displayedImageType}</strong></div>
         <div><span>Model</span><strong>{modelArchitecture}</strong></div>
         <div><span>Analiz Süresi</span><strong>{latest ? '2.4 saniye' : 'Beklemede'}</strong></div>
       </div>
       <div className='explain-panel'>
         <FlaskConical />
-        <p>{latest?.explanation || 'Profesyonel modda sahte bulgu üretilmez. Gerçek açıklama, validasyonlu CNN/ResNet/EfficientNet artefact yüklendikten ve analiz tamamlandıktan sonra burada gösterilir.'}</p>
+        <p>{latest ? (validated ? latest.explanation : 'Bu eski kayıt validasyonlu model runtime bilgisi taşımıyor. Profesyonel modda yeni analizler yalnızca onaylı model artefact ile raporlanır.') : 'Profesyonel modda sahte bulgu üretilmez. Gerçek açıklama, validasyonlu CNN/ResNet/EfficientNet artefact yüklendikten ve analiz tamamlandıktan sonra burada gösterilir.'}</p>
       </div>
       <div className='report-actions'>
         <button type='button' className='primary-action' onClick={onDownloadPdf} disabled={!latest}><Download />AI Medical Report PDF</button>
@@ -790,7 +799,7 @@ function HistoryPanel({ history: items, setResult, onDownloadPdf }) {
             <span>{formatDate(item.createdAt)}</span>
             <span>{normalizeImageType(item.imageType)}</span>
             <span>{riskLabel(item)}</span>
-            <span>{formatPercent(item.confidence)}</span>
+            <span>{isValidatedAnalysis(item) ? formatPercent(item.confidence) : 'Legacy'}</span>
             <span onClick={(event) => { event.stopPropagation(); onDownloadPdf(); }}><Download />Rapor görüntüle</span>
           </button>
         ))}
