@@ -1,4 +1,7 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+const API_BASE = import.meta.env.VITE_API_BASE_URL
+  || (typeof window !== 'undefined' && window.location.hostname.endsWith('onrender.com')
+    ? 'https://hantavision-ai-api.onrender.com'
+    : 'http://127.0.0.1:8000');
 const SESSION_KEY = 'hantavision.session';
 
 export function loadSession() {
