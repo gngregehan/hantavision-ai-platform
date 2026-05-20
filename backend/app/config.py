@@ -24,13 +24,15 @@ class Settings:
     firebase_service_account_json = os.getenv("FIREBASE_SERVICE_ACCOUNT_JSON", "").strip()
     firebase_service_account_path = os.getenv("FIREBASE_SERVICE_ACCOUNT_PATH", "").strip()
     firebase_collection_prefix = os.getenv("FIREBASE_COLLECTION_PREFIX", "").strip()
-    allowed_extensions = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tif", ".tiff"}
+    allowed_extensions = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tif", ".tiff", ".dcm", ".dicom"}
     allowed_content_types = {
         "image/jpeg",
         "image/png",
         "image/webp",
         "image/bmp",
         "image/tiff",
+        "application/dicom",
+        "application/octet-stream",
     }
 
 
