@@ -52,7 +52,7 @@ def public_user(user: dict[str, Any]) -> dict[str, Any]:
 
 
 def public_analysis(analysis: dict[str, Any]) -> dict[str, Any]:
-    return {
+    payload = {
         "id": str(analysis["id"]),
         "ownerId": str(analysis["ownerId"]),
         "fileName": analysis["fileName"],
@@ -73,6 +73,9 @@ def public_analysis(analysis: dict[str, Any]) -> dict[str, Any]:
         "modelStack": analysis.get("modelStack", []),
         "createdAt": _iso(analysis.get("createdAt")),
     }
+    if analysis.get("storedPath"):
+        payload["storedPath"] = analysis["storedPath"]
+    return payload
 
 
 def pdf_user(user: dict[str, Any]) -> SimpleNamespace:
@@ -83,6 +86,7 @@ def pdf_analysis(analysis: dict[str, Any]) -> SimpleNamespace:
     return SimpleNamespace(
         id=analysis["id"],
         file_name=analysis["fileName"],
+        stored_path=analysis.get("storedPath"),
         image_type=analysis["imageType"],
         hantavirus_result=analysis["hantavirusResult"],
         confidence=analysis["confidence"],
@@ -328,6 +332,7 @@ class DataStore:
                 "id": str(analysis.id),
                 "ownerId": str(analysis.owner_id),
                 "fileName": analysis.file_name,
+                "storedPath": str(analysis.stored_path),
                 "sha256": analysis.sha256,
                 "contentType": analysis.content_type,
                 "imageType": analysis.image_type,
