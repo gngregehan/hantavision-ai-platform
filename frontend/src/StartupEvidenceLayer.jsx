@@ -185,7 +185,7 @@ export default function StartupEvidenceLayer() {
         <div className='evidence-board'>
           <div className='evidence-heading'>
             <p>Kaggle / auxiliary discovery</p>
-            <h3>HantavirÃ¼s dÄ±ÅŸÄ± kaynaklar sadece yardÄ±mcÄ±</h3>
+            <h3>Hantavirüs dışı kaynaklar sadece yardımcı</h3>
           </div>
           <div className='source-registry-grid'>
             {evidence.auxiliaryDatasets.map((dataset) => (
