@@ -112,16 +112,18 @@ class HantavirusPipeline:
     def _classify_type(self, metrics: dict[str, Any], filename: str) -> dict[str, Any]:
         name = filename.lower()
         if metrics['qualityScore'] < 0.22:
-            return {'label': 'Analize uygun olmayan veya belirsiz görüntü', 'statement': 'Görüntü kalitesi analiz için yeterli değil.', 'route': 'expert_review', 'confidence': 0.42}
-        if any(token in name for token in ['xray', 'x-ray', 'röntgen', 'rontgen']):
-            return {'label': 'Akciğer röntgeni', 'statement': 'Bu görüntü akciğer röntgeni olarak işlendi.', 'route': 'medical_imaging', 'confidence': 0.82}
-        if any(token in name for token in ['ct', 'mr', 'mri', 'tomografi']):
-            return {'label': 'Tomografi / MR görüntüsü', 'statement': 'Bu görüntü kesitsel medikal görüntü olarak işlendi.', 'route': 'medical_imaging', 'confidence': 0.78}
-        if metrics['saturation'] > 0.18 and metrics['edgeDensity'] > 0.05:
-            return {'label': 'Mikroskop veya doku görüntüsü', 'statement': 'Bu görüntü laboratuvar/doku hattına yönlendirildi.', 'route': 'microscopy', 'confidence': 0.72}
-        if metrics['saturation'] > 0.09 and metrics['brightness'] > 0.42 and metrics['edgeDensity'] < 0.07:
-            return {'label': 'Fare / kemirgen fotoğrafı', 'statement': 'Bu görüntü taşıyıcı canlı değerlendirme hattına yönlendirildi.', 'route': 'carrier_detection', 'confidence': 0.69}
-        return {'label': 'Diğer medikal veya biyolojik görsel', 'statement': 'Bu görüntü uzman inceleme hattına yönlendirildi.', 'route': 'expert_review', 'confidence': 0.58}
+            return {'label': 'Bilinmeyen Görüntü', 'statement': 'Görüntü kalitesi analiz için yeterli değil.', 'route': 'expert_review', 'confidence': 0.42}
+        if any(token in name for token in ['xray', 'x-ray', 'röntgen', 'rontgen', 'chest', 'lung', '.dcm', '.dicom']):
+            return {'label': 'Akciğer Röntgeni', 'statement': 'Bu görüntü akciğer röntgeni olarak işlendi.', 'route': 'medical_imaging', 'confidence': 0.82}
+        if any(token in name for token in ['rodent', 'mouse', 'rat', 'fare', 'kemirgen']):
+            return {'label': 'Kemirgen Fotoğrafı', 'statement': 'Bu görüntü taşıyıcı canlı değerlendirme hattına yönlendirildi.', 'route': 'carrier_detection', 'confidence': 0.72}
+        if any(token in name for token in ['micro', 'mikroskop', 'cell', 'tissue', 'doku']) or (metrics['saturation'] > 0.18 and metrics['edgeDensity'] > 0.05):
+            return {'label': 'Mikroskop Görüntüsü', 'statement': 'Bu görüntü mikroskobik doku analiz hattına yönlendirildi.', 'route': 'microscopy', 'confidence': 0.72}
+        if any(token in name for token in ['lab', 'assay', 'culture', 'serum', 'plate']) or (metrics['saturation'] > 0.09 and metrics['brightness'] > 0.42 and metrics['edgeDensity'] < 0.07):
+            return {'label': 'Laboratuvar Görüntüsü', 'statement': 'Bu görüntü laboratuvar görüntü analiz hattına yönlendirildi.', 'route': 'laboratory', 'confidence': 0.66}
+        if metrics['grayProbability'] > 0.72 and metrics['contrast'] > 0.08:
+            return {'label': 'Akciğer Röntgeni', 'statement': 'Gri ton ve kontrast dağılımı medikal röntgen hattına yönlendirildi.', 'route': 'medical_imaging', 'confidence': 0.64}
+        return {'label': 'Bilinmeyen Görüntü', 'statement': 'Bu görüntü uzman inceleme hattına yönlendirildi.', 'route': 'expert_review', 'confidence': 0.58}
 
     def _classify_hantavirus(self, image_type: dict[str, Any], metrics: dict[str, Any], warnings: list[str]) -> dict[str, Any]:
         quality = metrics['qualityScore']
@@ -131,7 +133,7 @@ class HantavirusPipeline:
         signal = self._clamp(0.36 + contrast * 0.85 + edge * 1.25 + quality * 0.18)
         if route == 'carrier_detection':
             signal = self._clamp(signal + 0.12)
-        if route == 'microscopy':
+        if route in {'microscopy', 'laboratory'}:
             signal = self._clamp(signal - 0.05)
         if warnings:
             signal = self._clamp(signal - 0.12)
@@ -159,7 +161,7 @@ class HantavirusPipeline:
             ]
         elif image_type['route'] == 'carrier_detection':
             regions = [{'x': 20, 'y': 18, 'w': 58, 'h': 62, 'label': 'Taşıyıcı canlı adayı', 'score': 0.72}]
-        elif image_type['route'] == 'microscopy':
+        elif image_type['route'] in {'microscopy', 'laboratory'}:
             regions = [
                 {'x': 15, 'y': 18, 'w': 24, 'h': 24, 'label': 'Hücresel yoğunluk', 'score': 0.66},
                 {'x': 52, 'y': 30, 'w': 28, 'h': 26, 'label': 'Tekstür değişimi', 'score': 0.62},
