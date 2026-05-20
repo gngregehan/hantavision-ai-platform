@@ -95,10 +95,12 @@ class HantavirusPipeline:
         arr = np.asarray(resized).astype(np.float32) / 255.0
         gray = arr.mean(axis=2)
         width, height = image.size
-        gx = np.abs(np.diff(gray, axis=1)).mean()
-        gy = np.abs(np.diff(gray, axis=0)).mean()
+        gx_values = np.abs(np.diff(gray, axis=1))
+        gy_values = np.abs(np.diff(gray, axis=0))
+        gx = float(gx_values.mean()) if gx_values.size else 0.0
+        gy = float(gy_values.mean()) if gy_values.size else 0.0
         edge_density = float((gx + gy) / 2)
-        gradient_variance = float(np.var(np.diff(gray, axis=0)) + np.var(np.diff(gray, axis=1)))
+        gradient_variance = float((np.var(gy_values) if gy_values.size else 0.0) + (np.var(gx_values) if gx_values.size else 0.0))
         brightness = float(gray.mean())
         contrast = float(gray.std())
         saturation = float(np.mean(arr.max(axis=2) - arr.min(axis=2)))
