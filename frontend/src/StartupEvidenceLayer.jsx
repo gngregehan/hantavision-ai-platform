@@ -13,7 +13,7 @@ import {
 import { assistantChat, getModelStatus, getResearchEvidence } from './lib/api';
 
 const fallbackEvidence = {
-  mode: 'Hantavirus-only evidence mode',
+  mode: 'Yalnızca hantavirüs kanıt modu',
   honestyNotice: 'Kaynak kayıt sistemi yükleniyor. Klinik doğrulama metrikleri gerçek eğitim çıktısı olmadan gösterilmez.',
   datasets: [],
   referenceMedia: [],
@@ -24,11 +24,26 @@ const fallbackEvidence = {
 };
 
 function statusLabel(value = '') {
-  return value.replaceAll('-', ' ');
+  const normalized = value.replaceAll('-', ' ');
+  const dictionary = {
+    'hantavirus specific': 'hantavirüse özel',
+    'hantavirus reference': 'hantavirüs referansı',
+    'auxiliary only': 'yalnızca yardımcı',
+    'requires training': 'eğitim gerekli',
+    'curation ready': 'kürasyona hazır',
+    'requires label curation': 'etiket kürasyonu gerekli',
+    'manual verification required': 'manuel doğrulama gerekli',
+    'pipeline ready': 'hat hazır',
+    'pending real training run': 'gerçek eğitim koşusu bekleniyor',
+    candidate: 'aday',
+    pending: 'beklemede',
+    loaded: 'yüklü',
+  };
+  return dictionary[normalized] || normalized;
 }
 
 function metricValue(value) {
-  if (value === null || value === undefined) return 'Pending';
+  if (value === null || value === undefined) return 'Beklemede';
   if (typeof value === 'number') return value.toFixed(3);
   return value;
 }
@@ -37,7 +52,7 @@ export default function StartupEvidenceLayer() {
   const [evidence, setEvidence] = useState(fallbackEvidence);
   const [modelStatus, setModelStatus] = useState(null);
   const [open, setOpen] = useState(false);
-  const [question, setQuestion] = useState('Dataset ve metrikler gerçek mi?');
+  const [question, setQuestion] = useState('Veri seti ve metrikler gerçek mi?');
   const [answer, setAnswer] = useState('Sorunu dataset, model, metrik veya risk olarak sorabilirsin. Yanıtlar hantavirüs kaynak kayıt sistemine göre verilir.');
   const [loading, setLoading] = useState(false);
 
@@ -51,10 +66,10 @@ export default function StartupEvidenceLayer() {
   }, []);
 
   const registryStats = useMemo(() => [
-    { label: 'Hantavirus Dataset', value: evidence.datasets.length || '2+', icon: Database },
+    { label: 'Hantavirüs Veri Seti', value: evidence.datasets.length || '2+', icon: Database },
     { label: 'Model Adayı', value: evidence.models.length || '3', icon: BrainCircuit },
-    { label: 'Validation Metrics', value: modelStatus?.runtime?.ready ? 'Loaded' : 'Pending', icon: LineChart },
-    { label: 'Prediction Gate', value: modelStatus?.acceptsUploads ? 'Open' : 'Locked', icon: ShieldCheck },
+    { label: 'Doğrulama Metrikleri', value: modelStatus?.runtime?.ready ? 'Yüklü' : 'Beklemede', icon: LineChart },
+    { label: 'Tahmin Kapısı', value: modelStatus?.acceptsDiagnosticPredictions ? 'Açık' : 'Model bekliyor', icon: ShieldCheck },
   ], [evidence, modelStatus]);
 
   async function askAssistant(event) {
@@ -65,8 +80,8 @@ export default function StartupEvidenceLayer() {
       const response = await assistantChat({
         message: question,
         context: {
-          risk: 'research-mode',
-          imageType: 'hantavirus evidence registry',
+          risk: 'araştırma modu',
+          imageType: 'hantavirüs kanıt kayıt sistemi',
           model: 'CNN / ResNet-50 / EfficientNet-B0',
         },
       });
@@ -82,7 +97,7 @@ export default function StartupEvidenceLayer() {
     <>
       <section className='startup-evidence-layer' id='hantavirus-evidence'>
         <div className='evidence-hero'>
-          <p>Startup-Level Medical AI Evidence Pack</p>
+          <p>Startup seviyesinde medikal AI kanıt paketi</p>
           <h2>Hantavirüs odaklı veri seti, model ve doğrulama katmanı</h2>
           <span>{evidence.honestyNotice}</span>
         </div>
@@ -97,13 +112,13 @@ export default function StartupEvidenceLayer() {
           ))}
         </div>
 
-        <div className={`model-gate ${modelStatus?.acceptsUploads ? 'ready' : 'locked'}`}>
+        <div className={`model-gate ${modelStatus?.acceptsDiagnosticPredictions ? 'ready' : 'locked'}`}>
           <ShieldCheck />
           <div>
-            <span>Production inference gate</span>
-            <strong>{modelStatus?.acceptsUploads ? 'Validated model installed' : 'Validated model required'}</strong>
-            <p>{modelStatus?.predictionPolicy || 'Upload predictions are blocked until the API confirms a validated model artifact.'}</p>
-            <small>{modelStatus?.runtime?.reason || 'Model status endpoint is loading.'}</small>
+            <span>Üretim çıkarım kapısı</span>
+            <strong>{modelStatus?.acceptsDiagnosticPredictions ? 'Doğrulanmış model kurulu' : 'Doğrulanmış model gerekli'}</strong>
+            <p>{modelStatus?.predictionPolicy || 'API doğrulanmış model artefact onayı verene kadar tıbbi risk tahmini kapalıdır.'}</p>
+            <small>{modelStatus?.runtime?.reason || 'Model durumu yükleniyor.'}</small>
           </div>
         </div>
 
@@ -119,10 +134,10 @@ export default function StartupEvidenceLayer() {
                 <h4>{dataset.name}</h4>
                 <p>{dataset.hantavirusRelation}</p>
                 <dl>
-                  <div><dt>Modality</dt><dd>{dataset.modality}</dd></div>
-                  <div><dt>Label</dt><dd>{dataset.labelSignal}</dd></div>
-                  <div><dt>Files</dt><dd>{dataset.files?.join(', ')}</dd></div>
-                  <div><dt>Training</dt><dd>{dataset.trainingSuitability}</dd></div>
+                  <div><dt>Modalite</dt><dd>{dataset.modality}</dd></div>
+                  <div><dt>Etiket</dt><dd>{dataset.labelSignal}</dd></div>
+                  <div><dt>Dosyalar</dt><dd>{dataset.files?.join(', ')}</dd></div>
+                  <div><dt>Eğitim</dt><dd>{dataset.trainingSuitability}</dd></div>
                 </dl>
                 <a href={dataset.url} target='_blank' rel='noreferrer'>Kaynağı aç</a>
               </article>
@@ -155,7 +170,7 @@ export default function StartupEvidenceLayer() {
         <div className='evidence-board split-board'>
           <article>
             <div className='evidence-heading'>
-              <p>Reference media</p>
+              <p>Referans medya</p>
               <h3>Kaynaklı eğitim dışı örnekler</h3>
             </div>
             <div className='reference-media-list'>
@@ -171,7 +186,7 @@ export default function StartupEvidenceLayer() {
 
           <article>
             <div className='evidence-heading'>
-              <p>Validation protocol</p>
+              <p>Doğrulama protokolü</p>
               <h3>Doğrulama akışı</h3>
             </div>
             <ol className='validation-steps'>
@@ -184,7 +199,7 @@ export default function StartupEvidenceLayer() {
 
         <div className='evidence-board'>
           <div className='evidence-heading'>
-            <p>Kaggle / auxiliary discovery</p>
+            <p>Kaggle / yardımcı kaynak keşfi</p>
             <h3>Hantavirüs dışı kaynaklar sadece yardımcı</h3>
           </div>
           <div className='source-registry-grid'>
@@ -219,7 +234,7 @@ export default function StartupEvidenceLayer() {
         {open && (
           <section>
             <div>
-              <span><Bot />HantaVision AI Assistant</span>
+              <span><Bot />HantaVision AI Asistanı</span>
               <button type='button' onClick={() => setOpen(false)}><X /></button>
             </div>
             <p>{loading ? 'Yanıt hazırlanıyor...' : answer}</p>

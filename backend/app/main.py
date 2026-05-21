@@ -16,7 +16,7 @@ from .services.storage import save_image_upload
 app = FastAPI(
     title=settings.api_title,
     version="1.0.0",
-    description="AI-assisted Hantavirus medical and biological image triage platform API.",
+    description="AI destekli hantavirüs medikal ve biyolojik görüntü ön değerlendirme platformu API'si.",
 )
 
 app.add_middleware(
@@ -72,7 +72,7 @@ def health() -> dict:
         "status": "ok",
         "service": settings.api_title,
         "database": store.backend,
-        "modelReady": pipeline.status()["acceptsUploads"],
+        "modelReady": pipeline.status()["acceptsDiagnosticPredictions"],
     }
 
 

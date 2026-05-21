@@ -27,13 +27,13 @@ class ValidatedModelRuntime:
         if not manifest:
             return {
                 "ready": False,
-                "mode": "strict-validated-model",
+                "mode": "dogrulanmis-model-kapisi",
                 "reason": (
-                    "Validated model manifest is not installed. HantaVision will not generate "
-                    "medical risk predictions from demo heuristics."
+                    "Doğrulanmış model manifesti kurulu değil. HantaVision demo sezgileriyle "
+                    "medikal risk tahmini üretmez."
                 ),
                 "manifestPath": str(self.manifest_path),
-                "requiredArtifacts": ["model_manifest.json", "best.pt or approved inference artifact"],
+                "requiredArtifacts": ["model_manifest.json", "best.pt veya onaylı çıkarım artefact"],
                 "strictModelMode": settings.strict_model_mode,
                 "metrics": None,
             }
@@ -44,8 +44,8 @@ class ValidatedModelRuntime:
         if not artifact_path.exists():
             return {
                 "ready": False,
-                "mode": "strict-validated-model",
-                "reason": f"Model artifact is missing: {artifact_path}",
+                "mode": "dogrulanmis-model-kapisi",
+                "reason": f"Model artefact eksik: {artifact_path}",
                 "manifestPath": str(self.manifest_path),
                 "artifactPath": str(artifact_path),
                 "strictModelMode": settings.strict_model_mode,
@@ -55,8 +55,8 @@ class ValidatedModelRuntime:
         if not approved:
             return {
                 "ready": False,
-                "mode": "strict-validated-model",
-                "reason": "Manifest exists, but validation.approvedForUse is not true.",
+                "mode": "dogrulanmis-model-kapisi",
+                "reason": "Manifest var fakat validation.approvedForUse true değil.",
                 "manifestPath": str(self.manifest_path),
                 "artifactPath": str(artifact_path),
                 "strictModelMode": settings.strict_model_mode,
@@ -66,8 +66,8 @@ class ValidatedModelRuntime:
         if manifest.get("runtime") == "torchvision" and not self._torch_available():
             return {
                 "ready": False,
-                "mode": "strict-validated-model",
-                "reason": "Torch/Torchvision runtime is not installed in this API environment.",
+                "mode": "dogrulanmis-model-kapisi",
+                "reason": "Bu API ortamında Torch/Torchvision runtime kurulu değil.",
                 "manifestPath": str(self.manifest_path),
                 "artifactPath": str(artifact_path),
                 "strictModelMode": settings.strict_model_mode,
@@ -77,8 +77,8 @@ class ValidatedModelRuntime:
 
         return {
             "ready": True,
-            "mode": "validated-inference",
-            "reason": "Validated model artifact is installed and approved for research inference.",
+            "mode": "dogrulanmis-cikarim",
+            "reason": "Doğrulanmış model artefact kurulu ve araştırma amaçlı çıkarım için onaylı.",
             "manifestPath": str(self.manifest_path),
             "artifactPath": str(artifact_path),
             "strictModelMode": settings.strict_model_mode,
@@ -93,16 +93,16 @@ class ValidatedModelRuntime:
 
         manifest = self._read_manifest()
         if not manifest:
-            raise ModelUnavailableError("Validated model manifest is not installed.")
+            raise ModelUnavailableError("Doğrulanmış model manifesti kurulu değil.")
 
         runtime = manifest.get("runtime")
         if runtime != "torchvision":
-            raise ModelUnavailableError(f"Unsupported model runtime: {runtime!r}")
+            raise ModelUnavailableError(f"Desteklenmeyen model runtime: {runtime!r}")
 
         probabilities = self._predict_torchvision(image, manifest)
         classes = list(manifest.get("classes") or [])
         if not classes:
-            raise ModelUnavailableError("Model manifest does not define classes.")
+            raise ModelUnavailableError("Model manifesti sınıfları tanımlamıyor.")
 
         max_index = int(np.argmax(probabilities))
         predicted_class = classes[max_index]
@@ -112,9 +112,9 @@ class ValidatedModelRuntime:
         validation = manifest.get("validation") or {}
 
         if positive_probability >= 0.5:
-            label = "Hantavirus-positive visual signal detected"
+            label = "Hantavirüs pozitif görsel sinyal tespit edildi"
         else:
-            label = "No hantavirus-positive visual signal detected"
+            label = "Hantavirüs pozitif görsel sinyal tespit edilmedi"
 
         return {
             "hantavirusResult": label,
@@ -122,23 +122,23 @@ class ValidatedModelRuntime:
             "riskLevel": risk_level,
             "reliabilityScore": round(min(confidence, metrics.get("qualityScore", 0.0)), 4),
             "explanation": (
-                f"Validated {manifest.get('architecture', 'image')} model predicted class "
-                f"'{predicted_class}' with {confidence:.1%} confidence. Positive-class probability "
-                f"is {positive_probability:.1%}. This is research decision support, not a diagnosis."
+                f"Doğrulanmış {manifest.get('architecture', 'görüntü')} modeli "
+                f"'{predicted_class}' sınıfını {confidence:.1%} güvenle tahmin etti. Pozitif sınıf olasılığı "
+                f"{positive_probability:.1%}. Bu çıktı tanı değil, araştırma amaçlı karar desteğidir."
             ),
             "attention": {
-                "method": manifest.get("explainability", "Grad-CAM not configured for this artifact"),
+                "method": manifest.get("explainability", "Bu artefact için Grad-CAM yapılandırılmamış"),
                 "regions": manifest.get("staticAttentionRegions", []),
                 "heatmap": manifest.get("staticHeatmap", []),
             },
             "modelStack": [
-                {"stage": "Image type routing", "model": "quality-aware router", "runtime": "active"},
+                {"stage": "Görüntü türü yönlendirme", "model": "kalite duyarlı yönlendirici", "runtime": "aktif"},
                 {
-                    "stage": "Hantavirus classifier",
-                    "model": manifest.get("architecture", "validated artifact"),
-                    "runtime": "validated",
+                    "stage": "Hantavirüs sınıflandırıcı",
+                    "model": manifest.get("architecture", "doğrulanmış artefact"),
+                    "runtime": "doğrulanmış",
                 },
-                {"stage": "Validation metrics", "model": "held-out test report", "runtime": "loaded"},
+                {"stage": "Doğrulama metrikleri", "model": "ayrılmış test raporu", "runtime": "yüklü"},
             ],
             "runtime": {
                 "architecture": manifest.get("architecture"),
@@ -221,7 +221,7 @@ class ValidatedModelRuntime:
 
         classes = list(manifest.get("classes") or [])
         if not classes:
-            raise ModelUnavailableError("Model manifest does not define classes.")
+            raise ModelUnavailableError("Model manifesti sınıfları tanımlamıyor.")
         architecture = str(manifest.get("architecture") or "").lower()
         num_classes = len(classes)
 
@@ -234,7 +234,7 @@ class ValidatedModelRuntime:
             model = models.efficientnet_b0(weights=None)
             model.classifier[1] = nn.Linear(model.classifier[1].in_features, num_classes)
         else:
-            raise ModelUnavailableError(f"Unsupported torchvision architecture: {architecture}")
+            raise ModelUnavailableError(f"Desteklenmeyen torchvision mimarisi: {architecture}")
 
         checkpoint = torch.load(self._artifact_path(manifest), map_location="cpu")
         state_dict = checkpoint.get("state_dict", checkpoint)
@@ -260,12 +260,12 @@ class ValidatedModelRuntime:
 
     def _risk_from_probability(self, probability: float) -> str:
         if probability >= 0.85:
-            return "critical"
+            return "kritik"
         if probability >= 0.65:
-            return "high"
+            return "yüksek"
         if probability >= 0.4:
-            return "medium"
-        return "low"
+            return "orta"
+        return "düşük"
 
 
 class _SmallCNN:

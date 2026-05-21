@@ -2,24 +2,23 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import HTTPException, status
 import numpy as np
 from PIL import Image
 
 from .model_runtime import ModelUnavailableError, model_runtime
 
 MEDICAL_NOTICE = (
-    "This system is not a definitive medical diagnosis. Outputs are research/education "
-    "decision support only and must be reviewed by qualified clinicians."
+    "Bu sistem kesin tıbbi tanı koymaz. Çıktılar yalnızca araştırma/eğitim amaçlı "
+    "ön değerlendirme desteğidir ve uzman hekim tarafından yorumlanmalıdır."
 )
 
 
 class HantavirusPipeline:
     model_stack = [
-        {"stage": "Image intake and quality control", "model": "resolution/contrast/focus gates", "runtime": "active"},
-        {"stage": "Image type routing", "model": "quality-aware modality router", "runtime": "active"},
-        {"stage": "Hantavirus classification", "model": "validated CNN/ResNet/EfficientNet artifact", "runtime": "required"},
-        {"stage": "Explainability", "model": "artifact-provided Grad-CAM/attention metadata", "runtime": "required"},
+        {"stage": "Görüntü alımı ve kalite kontrol", "model": "çözünürlük/kontrast/netlik kapıları", "runtime": "aktif"},
+        {"stage": "Görüntü türü yönlendirme", "model": "kalite duyarlı modalite yönlendirici", "runtime": "aktif"},
+        {"stage": "Hantavirüs sınıflandırma", "model": "doğrulanmış CNN/ResNet/EfficientNet artefact", "runtime": "gerekli"},
+        {"stage": "Açıklanabilirlik", "model": "artefact destekli Grad-CAM/dikkat verisi", "runtime": "gerekli"},
     ]
 
     def analyze(self, image: Image.Image, original_filename: str) -> dict[str, Any]:
@@ -30,13 +29,10 @@ class HantavirusPipeline:
         try:
             prediction = model_runtime.predict(image, image_type, metrics)
         except ModelUnavailableError as exc:
-            raise HTTPException(
-                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail=(
-                    f"{exc} Train and install a validated hantavirus model artifact before enabling "
-                    "user-facing diagnostic predictions."
-                ),
-            ) from exc
+            prediction = self._pending_prediction(str(exc), image_type, metrics)
+            warnings.append(
+                "Görüntü kabul edildi; doğrulanmış hantavirüs modeli henüz kurulu olmadığı için tıbbi risk tahmini üretilmedi."
+            )
 
         reliability = self._clamp(
             prediction["reliabilityScore"] * 0.55 + metrics["qualityScore"] * 0.3 + image_type["confidence"] * 0.15
@@ -64,13 +60,14 @@ class HantavirusPipeline:
     def status(self) -> dict[str, Any]:
         runtime_status = model_runtime.status()
         return {
-            "pipeline": "HantaVision strict professional inference",
+            "pipeline": "HantaVision profesyonel doğrulanmış çıkarım hattı",
             "modelStack": self.model_stack,
             "runtime": runtime_status,
-            "acceptsUploads": bool(runtime_status["ready"]),
+            "acceptsUploads": True,
+            "acceptsDiagnosticPredictions": bool(runtime_status["ready"]),
             "predictionPolicy": (
-                "No placeholder medical predictions are emitted. Upload analysis requires a validated "
-                "model artifact with held-out metrics and approval metadata."
+                "Geçerli görüntüler kabul edilir ve kalite/mod yönlendirme kaydı oluşturulur. "
+                "Tıbbi risk tahmini için doğrulanmış model artefact, ayrılmış test metrikleri ve onay bilgisi gerekir."
             ),
         }
 
@@ -126,35 +123,35 @@ class HantavirusPipeline:
     def _quality_warnings(self, metrics: dict[str, Any]) -> list[str]:
         warnings: list[str] = []
         if min(metrics["width"], metrics["height"]) < 256:
-            warnings.append("Image resolution is low; inference reliability may decrease.")
+            warnings.append("Görüntü çözünürlüğü düşük; güvenilirlik azalabilir.")
         if metrics["contrast"] < 0.065:
-            warnings.append("Image contrast is low; medical features may not be separable.")
+            warnings.append("Görüntü kontrastı düşük; medikal örüntüler ayrışmayabilir.")
         if metrics["gradientVariance"] < 0.001:
-            warnings.append("Image may be blurred or out of focus.")
+            warnings.append("Görüntü bulanık veya odak dışı olabilir.")
         if metrics["brightness"] < 0.1 or metrics["brightness"] > 0.94:
-            warnings.append("Exposure is outside the preferred range.")
+            warnings.append("Pozlama tercih edilen aralığın dışında.")
         return warnings
 
     def _classify_type(self, metrics: dict[str, Any], filename: str) -> dict[str, Any]:
         name = filename.lower()
         if metrics["qualityScore"] < 0.22:
             return {
-                "label": "Unknown image",
-                "statement": "Image quality is not sufficient for the validated inference route.",
+                "label": "Bilinmeyen Görüntü",
+                "statement": "Görüntü kalitesi doğrulanmış çıkarım rotası için yeterli değil.",
                 "route": "expert_review",
                 "confidence": 0.42,
             }
         if any(token in name for token in ["xray", "x-ray", "rontgen", "chest", "lung", ".dcm", ".dicom"]):
             return {
-                "label": "Chest X-ray",
-                "statement": "The image was routed as a chest radiograph.",
+                "label": "Akciğer Röntgeni",
+                "statement": "Görüntü akciğer radyografisi rotasına yönlendirildi.",
                 "route": "medical_imaging",
                 "confidence": 0.82,
             }
         if any(token in name for token in ["rodent", "mouse", "rat", "fare", "kemirgen"]):
             return {
-                "label": "Rodent photograph",
-                "statement": "The image was routed to carrier-host visual assessment.",
+                "label": "Kemirgen Fotoğrafı",
+                "statement": "Görüntü taşıyıcı konak görsel değerlendirme rotasına yönlendirildi.",
                 "route": "carrier_detection",
                 "confidence": 0.72,
             }
@@ -162,8 +159,8 @@ class HantavirusPipeline:
             metrics["saturation"] > 0.18 and metrics["edgeDensity"] > 0.05
         ):
             return {
-                "label": "Microscopy image",
-                "statement": "The image was routed to microscopy analysis.",
+                "label": "Mikroskop Görüntüsü",
+                "statement": "Görüntü mikroskop analizi rotasına yönlendirildi.",
                 "route": "microscopy",
                 "confidence": 0.72,
             }
@@ -171,24 +168,67 @@ class HantavirusPipeline:
             metrics["saturation"] > 0.09 and metrics["brightness"] > 0.42 and metrics["edgeDensity"] < 0.07
         ):
             return {
-                "label": "Laboratory image",
-                "statement": "The image was routed to laboratory visual analysis.",
+                "label": "Laboratuvar Görüntüsü",
+                "statement": "Görüntü laboratuvar görsel analizi rotasına yönlendirildi.",
                 "route": "laboratory",
                 "confidence": 0.66,
             }
         if metrics["grayProbability"] > 0.72 and metrics["contrast"] > 0.08:
             return {
-                "label": "Chest X-ray",
-                "statement": "Grayscale distribution and contrast matched the radiograph route.",
+                "label": "Akciğer Röntgeni",
+                "statement": "Gri ton dağılımı ve kontrast röntgen rotasıyla eşleşti.",
                 "route": "medical_imaging",
                 "confidence": 0.64,
             }
         return {
-            "label": "Unknown image",
-            "statement": "The image requires expert review before validated inference.",
+            "label": "Bilinmeyen Görüntü",
+            "statement": "Doğrulanmış çıkarım öncesinde görüntü uzman incelemesi gerektirir.",
             "route": "expert_review",
             "confidence": 0.58,
         }
+
+    def _pending_prediction(self, reason: str, image_type: dict[str, Any], metrics: dict[str, Any]) -> dict[str, Any]:
+        return {
+            "hantavirusResult": "Görüntü kabul edildi; doğrulanmış model bekleniyor",
+            "confidence": 0.0,
+            "riskLevel": "Model bekleniyor",
+            "reliabilityScore": 0.0,
+            "explanation": (
+                "Görüntü başarıyla yüklendi ve kalite/görüntü türü kontrollerinden geçirildi. "
+                "Doğrulanmış CNN/ResNet/EfficientNet artefact kurulmadığı için sistem tıbbi risk sonucu üretmedi."
+            ),
+            "attention": {
+                "method": "Önizleme ısı haritası; gerçek Grad-CAM için doğrulanmış model gerekir.",
+                "regions": self._preview_regions(image_type.get("route")),
+                "heatmap": [],
+            },
+            "modelStack": [
+                {"stage": "Görüntü alımı", "model": "güvenli dosya doğrulama", "runtime": "tamamlandı"},
+                {"stage": "Kalite ölçümü", "model": "çözünürlük/kontrast/netlik ölçümü", "runtime": "tamamlandı"},
+                {"stage": "Model kapısı", "model": "doğrulanmış artefact kontrolü", "runtime": "model bekleniyor"},
+            ],
+            "runtime": {
+                "mode": "model-bekleniyor",
+                "reason": reason,
+                "imageRoute": image_type.get("route"),
+                "qualityScore": metrics.get("qualityScore"),
+            },
+        }
+
+    def _preview_regions(self, route: str | None) -> list[dict[str, Any]]:
+        if route == "medical_imaging":
+            return [
+                {"x": 22, "y": 24, "w": 24, "h": 50, "label": "Sol pulmoner alan", "score": 0.0},
+                {"x": 55, "y": 24, "w": 24, "h": 50, "label": "Sağ pulmoner alan", "score": 0.0},
+            ]
+        if route == "carrier_detection":
+            return [{"x": 22, "y": 18, "w": 56, "h": 62, "label": "Kemirgen aday alanı", "score": 0.0}]
+        if route in {"microscopy", "laboratory"}:
+            return [
+                {"x": 16, "y": 18, "w": 25, "h": 25, "label": "Doku/örnek yoğunluğu", "score": 0.0},
+                {"x": 54, "y": 34, "w": 28, "h": 25, "label": "Tekstür değişimi", "score": 0.0},
+            ]
+        return [{"x": 34, "y": 28, "w": 32, "h": 34, "label": "Uzman inceleme alanı", "score": 0.0}]
 
     @staticmethod
     def _clamp(value: float, minimum: float = 0.0, maximum: float = 0.98) -> float:

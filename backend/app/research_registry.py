@@ -10,31 +10,31 @@ UPDATED_AT = "2026-05-21"
 HANTAVIRUS_DATASETS: list[dict[str, Any]] = [
     {
         "id": "zenodo-10417810-hantavirus-infected-cells",
-        "name": "Image dataset for quantification of virus-infected cells",
+        "name": "Virüs enfekte hücrelerin nicelendirilmesi için görüntü veri seti",
         "source": "Zenodo / Helmholtz Centre for Infection Research",
         "url": "https://zenodo.org/records/10417810",
         "doi": "10.5281/zenodo.10417810",
-        "modality": "Fluorescence microscopy",
-        "hantavirusRelation": "Hantavirus strain 76-118 infected cells stained against viral nucleocapsid protein.",
-        "labelSignal": "Infected-cell / nucleocapsid-positive microscopy signal; negative controls must be curated from the source experiment.",
+        "modality": "Floresan mikroskopi",
+        "hantavirusRelation": "Hantavirüs 76-118 suşuyla enfekte hücreler, viral nükleokapsid proteinine karşı boyanmıştır.",
+        "labelSignal": "Enfekte hücre / nükleokapsid pozitif mikroskopi sinyali; negatif kontroller kaynak deneyden dikkatle ayrıştırılmalıdır.",
         "files": ["Test_dataset_CellProfiler.zip", "Test_dataset_NIS_elements.zip"],
         "size": "547.0 MB",
-        "trainingSuitability": "Best current hantavirus-only image source for a microscopy classifier after train/validation/test curation.",
+        "trainingSuitability": "Eğitim/doğrulama/test ayrımı yapıldıktan sonra mikroskopi sınıflandırıcısı için en güçlü hantavirüs odaklı görüntü kaynağı.",
         "status": "curation-ready",
         "recommendedModels": ["CNN", "ResNet-50", "EfficientNet-B0"],
     },
     {
         "id": "dryad-seoul-hantaan-endothelial-imaging",
-        "name": "Data from: Seoul orthohantavirus evades innate immune activation by reservoir endothelial cells",
+        "name": "Seoul orthohantavirüs rezervuar endotel hücrelerinde doğuştan bağışıklık aktivasyonundan kaçar veri seti",
         "source": "Dryad / PLOS Pathogens companion dataset",
         "url": "https://datadryad.org/dataset/doi:10.5061/dryad.gf1vhhmzd",
         "doi": "10.5061/dryad.gf1vhhmzd",
-        "modality": "Immunofluorescence microscopy and raw experiment media",
-        "hantavirusRelation": "Seoul orthohantavirus and Hantaan orthohantavirus infection experiments in endothelial cells.",
-        "labelSignal": "SEOV/HTNV N-positive cell experiments; figure-level folders require label extraction before model training.",
+        "modality": "İmmünfloresan mikroskopi ve ham deney medyası",
+        "hantavirusRelation": "Endotel hücrelerinde Seoul orthohantavirüs ve Hantaan orthohantavirüs enfeksiyon deneyleri.",
+        "labelSignal": "SEOV/HTNV N-pozitif hücre deneyleri; model eğitimi öncesinde klasörlerden etiket çıkarımı gerekir.",
         "files": ["Data_repository.zip", "README.md"],
         "size": "87.98 MB",
-        "trainingSuitability": "Research-grade supporting source; usable after manual label mapping and leakage checks.",
+        "trainingSuitability": "Araştırma düzeyinde destekleyici kaynak; manuel etiket eşleme ve veri sızıntısı kontrolünden sonra kullanılabilir.",
         "status": "requires-label-curation",
         "recommendedModels": ["CNN", "ResNet-18", "EfficientNet-B0"],
     },
@@ -44,30 +44,30 @@ HANTAVIRUS_DATASETS: list[dict[str, Any]] = [
 REFERENCE_MEDIA: list[dict[str, Any]] = [
     {
         "id": "cdc-phil-6078-hps-xray",
-        "name": "HPS chest x-ray with pulmonary effusion",
+        "name": "Pulmoner efüzyonlu HPS akciğer röntgeni",
         "source": "CDC Public Health Image Library",
         "url": "https://wwwn.cdc.gov/phil/Details.aspx?pid=6078",
-        "modality": "Chest radiograph",
-        "labelSignal": "Hantavirus pulmonary syndrome reference x-ray.",
-        "trainingSuitability": "Reference media only; not a balanced clinical x-ray dataset.",
+        "modality": "Akciğer radyografisi",
+        "labelSignal": "Hantavirüs pulmoner sendromu referans röntgeni.",
+        "trainingSuitability": "Yalnızca referans medya; dengeli klinik röntgen veri seti değildir.",
     },
     {
         "id": "cdc-phil-1137-sin-nombre-tem",
-        "name": "Sin Nombre virus transmission electron micrograph",
+        "name": "Sin Nombre virüsü transmisyon elektron mikrografı",
         "source": "CDC Public Health Image Library",
         "url": "https://wwwn.cdc.gov/phil/Details.aspx?pid=1137",
-        "modality": "Transmission electron microscopy",
-        "labelSignal": "Sin Nombre virus particles, HPS-associated hantavirus.",
-        "trainingSuitability": "Reference media only; useful for source-backed examples and education.",
+        "modality": "Transmisyon elektron mikroskopisi",
+        "labelSignal": "Sin Nombre virüs parçacıkları, HPS ilişkili hantavirüs.",
+        "trainingSuitability": "Yalnızca referans medya; kaynaklı örnekler ve eğitim için uygundur.",
     },
     {
         "id": "cdc-phil-1138-deer-mouse",
-        "name": "North American deer mouse reservoir image",
+        "name": "Kuzey Amerika geyik faresi rezervuar görüntüsü",
         "source": "CDC Public Health Image Library",
         "url": "https://wwwn.cdc.gov/phil/Details.aspx?pid=1138",
-        "modality": "Reservoir host photograph",
-        "labelSignal": "Peromyscus maniculatus, major carrier of Sin Nombre virus.",
-        "trainingSuitability": "Reference media only; a rodent detector needs a larger labeled host/non-host corpus.",
+        "modality": "Rezervuar konak fotoğrafı",
+        "labelSignal": "Peromyscus maniculatus, Sin Nombre virüsünün başlıca taşıyıcısı.",
+        "trainingSuitability": "Yalnızca referans medya; kemirgen dedektörü için daha büyük etiketli konak/konak dışı veri gerekir.",
     },
 ]
 
@@ -75,26 +75,26 @@ REFERENCE_MEDIA: list[dict[str, Any]] = [
 AUXILIARY_DATASETS: list[dict[str, Any]] = [
     {
         "id": "kaggle-hantavirus-search",
-        "name": "Kaggle hantavirus dataset search",
+        "name": "Kaggle hantavirüs veri seti araması",
         "source": "Kaggle Datasets",
         "url": "https://www.kaggle.com/datasets?search=hantavirus",
-        "modality": "dataset discovery",
-        "labelSignal": "No verified public hantavirus-specific clinical image benchmark found in the current search.",
+        "modality": "veri seti keşfi",
+        "labelSignal": "Mevcut aramada doğrulanmış, herkese açık, hantavirüse özel klinik görüntü benchmark'ı bulunmadı.",
         "trainingSuitability": (
-            "Do not use as evidence until a dataset slug is manually verified to contain hantavirus image labels."
+            "Veri seti bağlantısı manuel olarak hantavirüs görüntü etiketleri içerdiği kanıtlanmadan kanıt olarak kullanılmamalıdır."
         ),
         "status": "manual-verification-required",
     },
     {
         "id": "zenodo-irodent-8250392",
-        "name": "iRodent: keypoint and segmentation dataset of rodents in the wild",
+        "name": "iRodent: doğal ortamda kemirgen anahtar nokta ve segmentasyon veri seti",
         "source": "Zenodo / EPFL",
         "url": "https://zenodo.org/records/8250392",
         "doi": "10.5281/zenodo.8250392",
-        "modality": "rodent photographs with segmentation/keypoints",
-        "labelSignal": "Rodent species and segmentation labels; not hantavirus infection labels.",
+        "modality": "segmentasyon/anahtar nokta etiketli kemirgen fotoğrafları",
+        "labelSignal": "Kemirgen türü ve segmentasyon etiketleri; hantavirüs enfeksiyon etiketi değildir.",
         "trainingSuitability": (
-            "Optional auxiliary data for rodent-host detection only. It cannot train a hantavirus diagnosis model."
+            "Yalnızca kemirgen konak tespiti için yardımcı veri. Hantavirüs tanı modeli eğitmek için kullanılamaz."
         ),
         "status": "auxiliary-only",
     },
@@ -105,7 +105,7 @@ MODEL_VALIDATION: list[dict[str, Any]] = [
     {
         "id": "hantacell-cnn-baseline",
         "architecture": "CNN",
-        "target": "Hantavirus infected-cell microscopy screening",
+        "target": "Hantavirüs enfekte hücre mikroskopi taraması",
         "datasetScope": ["Zenodo 10.5281/zenodo.10417810", "Dryad 10.5061/dryad.gf1vhhmzd"],
         "trainingStatus": "pipeline-ready",
         "validationStatus": "pending-real-training-run",
@@ -115,13 +115,13 @@ MODEL_VALIDATION: list[dict[str, Any]] = [
             "recall": None,
             "f1": None,
             "auroc": None,
-            "note": "No metric is shown until a curated hantavirus-only split is trained and validated.",
+            "note": "Kürasyonlu yalnızca hantavirüs ayrımı eğitilip doğrulanmadan metrik gösterilmez.",
         },
     },
     {
         "id": "hantacell-resnet50-transfer",
         "architecture": "ResNet-50",
-        "target": "Transfer learning for microscopy and reference-media feature extraction",
+        "target": "Mikroskopi ve referans medya özellik çıkarımı için transfer öğrenme",
         "datasetScope": ["Zenodo 10.5281/zenodo.10417810", "CDC PHIL hantavirus reference media"],
         "trainingStatus": "pipeline-ready",
         "validationStatus": "pending-real-training-run",
@@ -131,13 +131,13 @@ MODEL_VALIDATION: list[dict[str, Any]] = [
             "recall": None,
             "f1": None,
             "auroc": None,
-            "note": "Clinical HPS x-ray validation cannot be claimed from the small public reference images.",
+            "note": "Az sayıdaki açık referans görselden klinik HPS röntgen doğrulaması iddia edilemez.",
         },
     },
     {
         "id": "hantacell-efficientnet-b0",
         "architecture": "EfficientNet-B0",
-        "target": "Efficient high-content microscopy classifier",
+        "target": "Verimli yüksek içerikli mikroskopi sınıflandırıcısı",
         "datasetScope": ["Zenodo 10.5281/zenodo.10417810"],
         "trainingStatus": "pipeline-ready",
         "validationStatus": "pending-real-training-run",
@@ -147,19 +147,19 @@ MODEL_VALIDATION: list[dict[str, Any]] = [
             "recall": None,
             "f1": None,
             "auroc": None,
-            "note": "Metrics must be generated by the included training protocol after label curation.",
+            "note": "Metrikler etiket kürasyonundan sonra dahil edilen eğitim protokolüyle üretilmelidir.",
         },
     },
 ]
 
 
 VALIDATION_PROTOCOL: list[str] = [
-    "Download only hantavirus-related sources listed in the registry.",
-    "Curate labels into train/validation/test folders without patient, plate, or experiment leakage.",
-    "Train CNN, ResNet-50, and EfficientNet-B0 with identical splits.",
-    "Report accuracy, precision, recall, F1, AUROC, confusion matrix, and Grad-CAM review notes.",
-    "Keep the platform in education/research mode until an expert-reviewed validation report exists.",
-    "Install a validated model_manifest.json and approved artifact before enabling upload predictions.",
+    "Yalnızca kayıt sisteminde listelenen hantavirüs ilişkili kaynakları indir.",
+    "Hasta, plaka veya deney sızıntısı olmadan etiketleri eğitim/doğrulama/test klasörlerine ayır.",
+    "CNN, ResNet-50 ve EfficientNet-B0 modellerini aynı veri ayrımıyla eğit.",
+    "Doğruluk, kesinlik, duyarlılık, F1, AUROC, karmaşıklık matrisi ve Grad-CAM inceleme notlarını raporla.",
+    "Uzman incelemeli doğrulama raporu oluşana kadar platformu eğitim/araştırma modunda tut.",
+    "Yükleme tahminlerini açmadan önce doğrulanmış model_manifest.json ve onaylı artefact kur.",
 ]
 
 
@@ -168,55 +168,55 @@ BIBLIOGRAPHY: list[dict[str, str]] = [
         "title": "Image dataset for quantification of virus-infected cells",
         "publisher": "Zenodo",
         "url": "https://zenodo.org/records/10417810",
-        "note": "Primary hantavirus-infected cell microscopy dataset used as the strongest training candidate.",
+        "note": "En güçlü eğitim adayı olarak kullanılan birincil hantavirüs enfekte hücre mikroskopi veri seti.",
     },
     {
         "title": "An Improved Workflow for the Quantification of Orthohantavirus Infection Using Automated Imaging and Flow Cytometry",
         "publisher": "Viruses / PubMed Central",
         "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10891500/",
-        "note": "Paper describing the imaging workflow and linking the Zenodo raw data.",
+        "note": "Görüntüleme iş akışını açıklayan ve Zenodo ham verisine bağlanan makale.",
     },
     {
         "title": "Data from: Seoul orthohantavirus evades innate immune activation by reservoir endothelial cells",
         "publisher": "Dryad",
         "url": "https://datadryad.org/dataset/doi:10.5061/dryad.gf1vhhmzd",
-        "note": "Supporting SEOV/HTNV immunofluorescence and raw experiment data; label curation required.",
+        "note": "Destekleyici SEOV/HTNV immünfloresan ve ham deney verisi; etiket kürasyonu gerekir.",
     },
     {
         "title": "CDC PHIL ID 6078: HPS chest x-ray",
         "publisher": "CDC Public Health Image Library",
         "url": "https://wwwn.cdc.gov/phil/Details.aspx?pid=6078",
-        "note": "Reference HPS x-ray media, not a balanced training dataset.",
+        "note": "Referans HPS röntgen medyası; dengeli eğitim veri seti değildir.",
     },
     {
         "title": "CDC PHIL ID 1137: Sin Nombre virus electron micrograph",
         "publisher": "CDC Public Health Image Library",
         "url": "https://wwwn.cdc.gov/phil/Details.aspx?pid=1137",
-        "note": "Reference hantavirus micrograph media.",
+        "note": "Referans hantavirüs mikrograf medyası.",
     },
     {
         "title": "CDC PHIL ID 1138: North American deer mouse",
         "publisher": "CDC Public Health Image Library",
         "url": "https://wwwn.cdc.gov/phil/Details.aspx?pid=1138",
-        "note": "Reference reservoir-host media.",
+        "note": "Referans rezervuar konak medyası.",
     },
     {
-        "title": "Kaggle Datasets search",
+        "title": "Kaggle veri seti araması",
         "publisher": "Kaggle",
         "url": "https://www.kaggle.com/datasets?search=hantavirus",
-        "note": "Checked as a possible source; no verified hantavirus-specific clinical image benchmark is claimed without manual dataset-slug validation.",
+        "note": "Olası kaynak olarak kontrol edildi; manuel veri seti doğrulaması olmadan hantavirüse özel klinik görüntü benchmark'ı iddia edilmez.",
     },
     {
         "title": "iRodent: a keypoint and segmentation dataset of rodents in the wild",
         "publisher": "Zenodo",
         "url": "https://zenodo.org/records/8250392",
-        "note": "Auxiliary rodent visual dataset; useful for host image routing, not infection diagnosis.",
+        "note": "Yardımcı kemirgen görsel veri seti; konak görüntü yönlendirmesi için yararlı, enfeksiyon tanısı için değildir.",
     },
     {
         "title": "Clinician Brief: Hantavirus Pulmonary Syndrome",
         "publisher": "CDC",
         "url": "https://www.cdc.gov/hantavirus/hcp/clinical-overview/hps.html",
-        "note": "Clinical context and diagnostic caution used for platform disclaimers.",
+        "note": "Platform uyarılarında kullanılan klinik bağlam ve tanısal dikkat bilgisi.",
     },
 ]
 
@@ -224,7 +224,7 @@ BIBLIOGRAPHY: list[dict[str, str]] = [
 def evidence_payload() -> dict[str, Any]:
     return {
         "updatedAt": UPDATED_AT,
-        "mode": "Hantavirus-only evidence mode",
+        "mode": "Yalnızca hantavirüs kanıt modu",
         "datasets": HANTAVIRUS_DATASETS,
         "referenceMedia": REFERENCE_MEDIA,
         "auxiliaryDatasets": AUXILIARY_DATASETS,
@@ -232,9 +232,9 @@ def evidence_payload() -> dict[str, Any]:
         "validationProtocol": VALIDATION_PROTOCOL,
         "bibliography": BIBLIOGRAPHY,
         "honestyNotice": (
-            "Public, balanced, clinical-grade hantavirus image benchmarks and validated pretrained "
-            "CNN/ResNet/EfficientNet models were not found. The API now blocks placeholder predictions "
-            "until the listed sources are curated, trained, validated, and installed as a model artifact."
+            "Herkese açık, dengeli, klinik düzeyde hantavirüs görüntü benchmark'ı ve doğrulanmış hazır "
+            "CNN/ResNet/EfficientNet modeli bulunmadı. Listelenen kaynaklar kürasyon, eğitim, doğrulama "
+            "ve model artefact kurulumu tamamlanana kadar API sahte tıbbi tahmin üretmez."
         ),
         "generatedAt": datetime.now(timezone.utc).isoformat(),
     }
@@ -245,46 +245,46 @@ def assistant_reply(message: str, context: dict[str, Any] | None = None) -> dict
     text = message.strip().lower()
     risk = context.get("risk") or "beklemede"
     image_type = context.get("imageType") or "gorsel henuz secilmedi"
-    model = context.get("model") or "otomatik model router"
+    model = context.get("model") or "otomatik model yönlendirici"
 
     if any(word in text for word in ["veri", "dataset", "kaynak", "egitim", "eğitim"]):
         reply = (
-            "Bu platformda sadece hantavirus iliskili kaynaklar listeleniyor: Zenodo infected-cell "
-            "microscopy seti ana egitim adayi, Dryad SEOV/HTNV verisi destekleyici kaynak, CDC PHIL "
-            "gorselleri ise referans medya. Kaggle sonucu dogrulanmis hanta etiketli klinik gorsel "
-            "seti olarak kullanilmiyor; dataset slug'i elle kanitlanmadan egitime alinmaz."
+            "Bu platformda sadece hantavirüs ilişkili kaynaklar listeleniyor: Zenodo enfekte hücre "
+            "mikroskopi seti ana eğitim adayı, Dryad SEOV/HTNV verisi destekleyici kaynak, CDC PHIL "
+            "görselleri ise referans medyadır. Kaggle sonucu doğrulanmış hanta etiketli klinik görsel "
+            "seti olarak kullanılmıyor; veri seti bağlantısı elle kanıtlanmadan eğitime alınmaz."
         )
     elif any(word in text for word in ["metrik", "accuracy", "dogrulama", "doğrulama", "basari", "başarı"]):
         reply = (
-            "Dogrulama metrikleri su an bilincli olarak bos: sahte accuracy yazmiyoruz. Once etiketli "
-            "train/validation/test ayrimi yapilmali, sonra CNN, ResNet-50 ve EfficientNet-B0 icin "
-            "accuracy, precision, recall, F1 ve AUROC raporlanmali."
+            "Doğrulama metrikleri şu an bilinçli olarak boş: sahte doğruluk yazmıyoruz. Önce etiketli "
+            "eğitim/doğrulama/test ayrımı yapılmalı, sonra CNN, ResNet-50 ve EfficientNet-B0 için "
+            "doğruluk, kesinlik, duyarlılık, F1 ve AUROC raporlanmalı."
         )
     elif any(word in text for word in ["risk", "sonuc", "sonuç", "ne anlama"]):
         reply = (
-            f"Bu ekrandaki sonuc {risk} risk olarak okunuyor. Gorsel turu {image_type}, secilen model "
-            f"{model}. Bu bir tani degil; uzman hekim ve laboratuvar testiyle dogrulanmasi gerekir."
+            f"Bu ekrandaki sonuç {risk} risk olarak okunuyor. Görsel türü {image_type}, seçilen model "
+            f"{model}. Bu bir tanı değil; uzman hekim ve laboratuvar testiyle doğrulanması gerekir."
         )
     elif any(word in text for word in ["model", "cnn", "resnet", "efficientnet"]):
         reply = (
-            "Model katmani uc adayla tasarlandi: CNN hizli mikroskopi baseline, ResNet-50 transfer "
-            "learning ve EfficientNet-B0 verimli mikroskopi siniflandirma. Klinik HPS x-ray icin "
-            "yeterli acik etiketli veri bulunmadigi icin o kisim research-only tutuluyor."
+            "Model katmanı üç adayla tasarlandı: CNN hızlı mikroskopi başlangıç modeli, ResNet-50 transfer "
+            "öğrenme ve EfficientNet-B0 verimli mikroskopi sınıflandırma. Klinik HPS röntgeni için "
+            "yeterli açık etiketli veri bulunmadığı için o kısım araştırma amaçlı tutuluyor."
         )
     elif any(word in text for word in ["tani", "tanı", "doktor", "hekim"]):
         reply = (
-            "HantaVision kesin tibbi tani koymaz. Hantavirus supesinde resmi tani klinik degerlendirme "
-            "ve laboratuvar testleriyle yapilmalidir."
+            "HantaVision kesin tıbbi tanı koymaz. Hantavirüs şüphesinde resmi tanı klinik değerlendirme "
+            "ve laboratuvar testleriyle yapılmalıdır."
         )
     else:
         reply = (
-            "Sorunu dataset, model, risk, metrik veya rapor olarak sorabilirsin. Ben mevcut analiz "
-            "sonucunu ve sadece hantavirus kaynakli evidence registry bilgisini kullanarak cevap veririm."
+            "Sorunu veri seti, model, risk, metrik veya rapor olarak sorabilirsin. Ben mevcut analiz "
+            "sonucunu ve yalnızca hantavirüs kaynaklı kanıt kayıt bilgisini kullanarak cevap veririm."
         )
 
     return {
         "reply": reply,
         "context": {"risk": risk, "imageType": image_type, "model": model},
-        "disclaimer": "Research/education purpose only; not a medical diagnosis.",
+        "disclaimer": "Yalnızca araştırma/eğitim amaçlıdır; tıbbi tanı değildir.",
         "sources": [item["url"] for item in BIBLIOGRAPHY[:4]],
     }

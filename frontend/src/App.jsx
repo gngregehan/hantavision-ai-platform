@@ -48,40 +48,40 @@ import {
 const initialAuth = { fullName: '', email: 'admin@hantavision.local', password: 'ChangeMe!2026' };
 
 const analysisSteps = [
-  'Scanning image...',
-  'Preprocessing biomedical matrix...',
-  'Extracting pulmonary patterns...',
-  'Loading model route...',
-  'Running EfficientNet / ResNet...',
-  'Generating diagnostic report...',
+  'Görüntü taranıyor...',
+  'Biyomedikal matris ön işleniyor...',
+  'Pulmoner örüntüler çıkarılıyor...',
+  'Model rotası yükleniyor...',
+  'EfficientNet / ResNet çalıştırılıyor...',
+  'Tanısal araştırma raporu oluşturuluyor...',
 ];
 
 const techStack = ['Python', 'OpenCV', 'TensorFlow / PyTorch', 'CNN', 'ResNet', 'EfficientNet', 'Grad-CAM', 'React', 'FastAPI'];
 
 const bootLines = [
-  'Initializing Neural Diagnostic System...',
-  'Connecting Medical Vision Engine...',
-  'AI Core Online',
+  'Sinirsel tanısal sistem başlatılıyor...',
+  'Medikal görüntü motoruna bağlanılıyor...',
+  'AI çekirdeği çevrimiçi',
 ];
 
 const liveDataStream = [
-  'VISION BUS 07: ONLINE',
-  'BIO-SCAN LATENCY: 18MS',
-  'MODEL ROUTER: STRICT',
-  'GRAD-CAM CHANNEL: READY',
-  'DATA VAULT: ENCRYPTED',
+  'GÖRÜNTÜ HATTI 07: ÇEVRİMİÇİ',
+  'BİYO-TARAMA GECİKMESİ: 18MS',
+  'MODEL YÖNLENDİRİCİ: SIKI MOD',
+  'GRAD-CAM KANALI: HAZIR',
+  'VERİ KASASI: ŞİFRELİ',
 ];
 
 const floatingAiCards = [
-  ['AI Status', 'Core Online'],
-  ['Vision Engine', 'Standby'],
-  ['Model Gate', 'Validated Only'],
+  ['AI Durumu', 'Çekirdek çevrimiçi'],
+  ['Görüntü Motoru', 'Hazırda'],
+  ['Model Kapısı', 'Yalnızca doğrulanmış'],
 ];
 
 const modelRoutes = [
-  ['X-Ray', 'ResNet', 'pulmonary opacity analysis'],
-  ['Rodent', 'YOLO', 'reservoir-host detection'],
-  ['Microscope', 'EfficientNet', 'infected-cell microscopy'],
+  ['Röntgen', 'ResNet', 'pulmoner opasite analizi'],
+  ['Kemirgen', 'YOLO', 'taşıyıcı konak tespiti'],
+  ['Mikroskop', 'EfficientNet', 'enfekte hücre mikroskopisi'],
 ];
 
 const riskLevels = [
@@ -99,7 +99,7 @@ const faqItems = [
   ['Veriler saklanıyor mu?', 'Giriş yapan kullanıcıların analiz geçmişi güvenli veri deposunda saklanır ve kullanıcı panelinden izlenebilir.'],
 ];
 
-const modeOptions = ['Clinical Mode', 'Research Mode', 'Educational Mode'];
+const modeOptions = ['Klinik Mod', 'Araştırma Modu', 'Eğitim Modu'];
 
 function formatPercent(value) {
   return `${Math.round((Number(value) || 0) * 100)}%`;
@@ -125,23 +125,23 @@ function normalizeImageType(value = '') {
 }
 
 function inferImageType(file) {
-  if (!file) return { label: 'Bilinmeyen Görüntü', model: 'Expert Review Router', route: 'unknown' };
+  if (!file) return { label: 'Bilinmeyen Görüntü', model: 'Uzman İnceleme Yönlendiricisi', route: 'unknown' };
   const name = file.name.toLocaleLowerCase('tr-TR');
-  if (name.endsWith('.dcm') || name.endsWith('.dicom')) return { label: 'Akciğer Röntgeni', model: 'Medical CNN Model', route: 'xray' };
-  if (/(xray|x-ray|röntgen|rontgen|chest|lung|akci)/.test(name)) return { label: 'Akciğer Röntgeni', model: 'Medical CNN Model', route: 'xray' };
-  if (/(rodent|mouse|rat|fare|kemirgen)/.test(name)) return { label: 'Kemirgen Fotoğrafı', model: 'Rodent Detection Model', route: 'rodent' };
-  if (/(micro|mikroskop|cell|tissue|doku)/.test(name)) return { label: 'Mikroskop Görüntüsü', model: 'Microscopy Model', route: 'micro' };
-  if (/(lab|assay|culture|serum|plate)/.test(name)) return { label: 'Laboratuvar Görüntüsü', model: 'Laboratory Vision Model', route: 'lab' };
-  return { label: 'Bilinmeyen Görüntü', model: 'Expert Review Router', route: 'unknown' };
+  if (name.endsWith('.dcm') || name.endsWith('.dicom')) return { label: 'Akciğer Röntgeni', model: 'Medikal CNN Modeli', route: 'xray' };
+  if (/(xray|x-ray|röntgen|rontgen|chest|lung|akci)/.test(name)) return { label: 'Akciğer Röntgeni', model: 'Medikal CNN Modeli', route: 'xray' };
+  if (/(rodent|mouse|rat|fare|kemirgen)/.test(name)) return { label: 'Kemirgen Fotoğrafı', model: 'Kemirgen Tespit Modeli', route: 'rodent' };
+  if (/(micro|mikroskop|cell|tissue|doku)/.test(name)) return { label: 'Mikroskop Görüntüsü', model: 'Mikroskopi Modeli', route: 'micro' };
+  if (/(lab|assay|culture|serum|plate)/.test(name)) return { label: 'Laboratuvar Görüntüsü', model: 'Laboratuvar Görüntü Modeli', route: 'lab' };
+  return { label: 'Bilinmeyen Görüntü', model: 'Uzman İnceleme Yönlendiricisi', route: 'unknown' };
 }
 
 function modelForType(value) {
   const label = normalizeImageType(value);
-  if (label === 'Akciğer Röntgeni') return 'ResNet Pulmonary Model';
-  if (label === 'Kemirgen Fotoğrafı') return 'YOLO Rodent Detector';
-  if (label === 'Mikroskop Görüntüsü') return 'EfficientNet Microscopy Model';
-  if (label === 'Laboratuvar Görüntüsü') return 'CNN Laboratory Classifier';
-  return 'Expert Review Router';
+  if (label === 'Akciğer Röntgeni') return 'ResNet Pulmoner Modeli';
+  if (label === 'Kemirgen Fotoğrafı') return 'YOLO Kemirgen Dedektörü';
+  if (label === 'Mikroskop Görüntüsü') return 'EfficientNet Mikroskopi Modeli';
+  if (label === 'Laboratuvar Görüntüsü') return 'CNN Laboratuvar Sınıflandırıcısı';
+  return 'Uzman İnceleme Yönlendiricisi';
 }
 
 function architectureForType(value) {
@@ -150,7 +150,7 @@ function architectureForType(value) {
   if (label === 'Kemirgen Fotoğrafı') return 'YOLO Detector';
   if (label === 'Mikroskop Görüntüsü') return 'EfficientNet-B0';
   if (label === 'Laboratuvar Görüntüsü') return 'CNN Ensemble';
-  return 'Expert Review Router';
+  return 'Uzman İnceleme Yönlendiricisi';
 }
 
 function isValidatedAnalysis(item) {
@@ -159,7 +159,7 @@ function isValidatedAnalysis(item) {
 
 function riskLabel(item) {
   if (!item) return 'Beklemede';
-  if (!isValidatedAnalysis(item)) return 'Legacy demo';
+  if (!isValidatedAnalysis(item)) return 'Model bekleniyor';
   const risk = String(item.riskLevel || '').toLocaleLowerCase('tr-TR');
   if (risk.includes('yüksek') && Number(item.confidence) > 0.84) return 'Kritik';
   if (risk.includes('yüksek')) return 'Yüksek';
@@ -199,7 +199,7 @@ function App() {
   const [session, setSession] = useState(() => loadSession());
   const [auth, setAuth] = useState(initialAuth);
   const [authMode, setAuthMode] = useState('login');
-  const [analysisMode, setAnalysisMode] = useState('Clinical Mode');
+  const [analysisMode, setAnalysisMode] = useState('Klinik Mod');
   const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
   const [result, setResult] = useState(null);
@@ -222,13 +222,14 @@ function App() {
   const inferred = useMemo(() => inferImageType(file), [file]);
   const displayedImageType = normalizeImageType(latest?.imageType || inferred.label);
   const installedArchitecture = modelStatus?.runtime?.manifest?.architecture;
-  const selectedModel = installedArchitecture ? `Validated ${installedArchitecture}` : modelForType(displayedImageType);
+  const diagnosticReady = Boolean(modelStatus?.acceptsDiagnosticPredictions ?? modelStatus?.runtime?.ready);
+  const selectedModel = installedArchitecture ? `Doğrulanmış ${installedArchitecture}` : modelForType(displayedImageType);
   const modelArchitecture = installedArchitecture || architectureForType(displayedImageType);
   const totalAnalyses = overview?.totalAnalyses ?? history.length;
   const detectionAccuracy = modelStatus?.runtime?.metrics?.accuracy
     ? formatPercent(modelStatus.runtime.metrics.accuracy)
-    : 'Metrics pending';
-  const threatLevel = latest && isValidatedAnalysis(latest) ? riskLabel(latest) : 'Gated';
+    : 'Metrik bekleniyor';
+  const threatLevel = latest && isValidatedAnalysis(latest) ? riskLabel(latest) : 'Model kapısı';
   const avgConfidence = history.length
     ? history.reduce((sum, item) => sum + (Number(item.confidence) || 0), 0) / history.length
     : Number(latest?.confidence) || 0;
@@ -292,7 +293,7 @@ function App() {
         return;
       }
       const payload = authMode === 'register'
-        ? { full_name: auth.fullName || 'HantaVision User', email: auth.email, password: auth.password }
+        ? { full_name: auth.fullName || 'HantaVision Kullanıcısı', email: auth.email, password: auth.password }
         : { email: auth.email, password: auth.password };
       const nextSession = authMode === 'register' ? await register(payload) : await login(payload);
       saveSession(nextSession);
@@ -336,7 +337,7 @@ function App() {
       setProgress(100);
       setActiveStep(analysisSteps.length - 1);
       await refreshData(session.accessToken, isAdmin);
-      setMessage('Analiz tamamlandı. AI Diagnostic Report oluşturuldu.');
+      setMessage('Görüntü kabul edildi. AI araştırma raporu oluşturuldu.');
     } catch (error) {
       setProgress(0);
       setActiveStep(-1);
@@ -381,11 +382,11 @@ function App() {
     if (question.includes('risk')) {
       setAssistantAnswer(isValidatedAnalysis(latest)
         ? `Bu analizde risk durumu ${riskLabel(latest)}. Güven skoru ${formatPercent(latest?.confidence || avgConfidence)} ve sonuç uzman değerlendirmesiyle doğrulanmalı.`
-        : 'Bu kayıt eski demo döneminden kalmış olabilir. Profesyonel modda validasyonlu model artefact olmadan yeni risk sonucu üretilmez.');
+        : 'Bu görüntü kabul edildi, fakat doğrulanmış model artefact olmadığı için tıbbi risk sonucu üretilmedi.');
     } else if (question.includes('model') || question.includes('nasıl')) {
-      setAssistantAnswer(modelStatus?.acceptsUploads
+      setAssistantAnswer(diagnosticReady
         ? `${selectedModel}, yüklü validasyonlu artefact üzerinden çalışır. Ön işleme, sınıflandırma ve artefact destekliyorsa Grad-CAM birlikte raporlanır.`
-        : 'Profesyonel mod aktif: validasyonlu model artefact yüklenmeden sistem kullanıcı görseline risk sonucu üretmez. Önce etiketli hantavirüs verisiyle eğitim ve test metrikleri gerekiyor.');
+        : 'Profesyonel mod aktif: sistem fotoğrafı kabul eder ve kaydeder, ama doğrulanmış model artefact yüklenmeden tıbbi risk sonucu üretmez. Önce etiketli hantavirüs verisiyle eğitim ve test metrikleri gerekiyor.');
     } else if (question.includes('tanı')) {
       setAssistantAnswer('Bu sistem kesin tıbbi tanı koymaz. Çıktı yalnızca ön değerlendirme ve eğitim amaçlıdır; kesin tanı için uzman hekime başvurulmalıdır.');
     } else {
@@ -394,11 +395,11 @@ function App() {
   }
 
   const dashboardCards = [
-    { label: 'Active Models', value: modelStatus?.acceptsUploads ? '3 live' : '3 staged', icon: BrainCircuit },
-    { label: 'Total Scans', value: totalAnalyses, icon: FileSearch },
-    { label: 'AI Status', value: modelStatus?.acceptsUploads ? 'Validated' : 'Strict Gate', icon: Activity },
-    { label: 'Threat Level', value: threatLevel, icon: Gauge },
-    { label: 'Detection Accuracy', value: detectionAccuracy, icon: LineChart },
+    { label: 'Aktif Modeller', value: diagnosticReady ? '3 canlı' : '3 hazır', icon: BrainCircuit },
+    { label: 'Toplam Tarama', value: totalAnalyses, icon: FileSearch },
+    { label: 'AI Durumu', value: diagnosticReady ? 'Doğrulanmış' : 'Model bekliyor', icon: Activity },
+    { label: 'Tehdit Seviyesi', value: threatLevel, icon: Gauge },
+    { label: 'Tespit Doğruluğu', value: detectionAccuracy, icon: LineChart },
   ];
 
   return (
@@ -409,9 +410,9 @@ function App() {
       <section className='hero-section' id='top'>
         <div className='hero-copy'>
           <p className='dev-mark'>DEV</p>
-          <p className='eyebrow'>Modern Medical AI Research Platform</p>
+          <p className='eyebrow'>Modern Medikal AI Araştırma Platformu</p>
           <h1>HANTAVISION AI</h1>
-          <p className='hero-subtitle'>Next-Generation Biological Threat Detection Platform</p>
+          <p className='hero-subtitle'>Yeni Nesil Biyolojik Tehdit Tespit Platformu</p>
           <p className='hero-lead'>AI destekli biyolojik tehdit ve hantavirüs görüntü analiz platformu</p>
           <p className='hero-description'>
             Bu sistem akciğer röntgeni, kemirgen görüntüsü ve mikroskobik görüntüleri analiz ederek hantavirüs ile ilişkili riskleri yapay zeka destekli olarak değerlendirir.
@@ -428,7 +429,7 @@ function App() {
             ))}
           </div>
         </div>
-        <HeroVisual modelStatus={modelStatus} />
+        <HeroVisual modelStatus={modelStatus} diagnosticReady={diagnosticReady} />
       </section>
 
       <section className='dashboard-strip' aria-label='Sistem istatistikleri'>
@@ -443,7 +444,7 @@ function App() {
 
       <section className='analysis-section' id='analysis'>
         <div className='section-heading'>
-          <p className='eyebrow'>Biological Image Upload Zone</p>
+          <p className='eyebrow'>Biyolojik Görüntü Yükleme Alanı</p>
           <h2>Akıllı görüntü analizi</h2>
           <p>Görüntü türü otomatik algılanır, uygun model seçilir ve açıklanabilir AI raporu oluşturulur.</p>
         </div>
@@ -453,18 +454,19 @@ function App() {
             <input
               ref={fileInputRef}
               type='file'
-              accept='image/png,image/jpeg,image/jpg,image/webp,image/bmp,image/tiff,.dcm,.dicom,application/dicom'
+              accept='image/png,image/jpeg,image/jpg,image/pjpeg,image/webp,image/bmp,image/tiff,image/heic,image/heif,.jpg,.jpeg,.jfif,.png,.webp,.bmp,.tif,.tiff,.heic,.heif,.dcm,.dicom,application/dicom'
               onChange={(event) => handleFileSelect(event.target.files?.[0])}
             />
             <button type='button' className='upload-target' onClick={() => fileInputRef.current?.click()}>
               <UploadCloud />
               <strong>Görüntüyü buraya sürükle veya yükle</strong>
-              <span>{file ? file.name : 'PNG, JPG, JPEG, DICOM desteği'}</span>
+              <span>{file ? file.name : 'PNG, JPG, JPEG, HEIC, DICOM desteği'}</span>
             </button>
             <div className='upload-meta'>
               <span>PNG</span>
               <span>JPG</span>
               <span>JPEG</span>
+              <span>HEIC</span>
               <span>DICOM desteği</span>
               <span>Maksimum dosya boyutu: 12 MB</span>
             </div>
@@ -531,8 +533,8 @@ function App() {
           <p className='eyebrow'>Model bilgisi</p>
           <h2>Görüntü sınıflandırma ve açıklanabilir AI</h2>
           <p>Bu sistem görüntü sınıflandırma, ön işleme, segmentasyon ve açıklanabilir yapay zeka tekniklerini kullanır.</p>
-          <div className='model-route-table' aria-label='Multi-model routing'>
-            <div><strong>Input</strong><strong>Model</strong><strong>Route</strong></div>
+          <div className='model-route-table' aria-label='Çok modelli yönlendirme'>
+            <div><strong>Girdi</strong><strong>Model</strong><strong>Rota</strong></div>
             {modelRoutes.map(([input, model, route]) => (
               <div key={input}><span>{input}</span><span>{model}</span><span>{route}</span></div>
             ))}
@@ -568,16 +570,16 @@ function App() {
 
       <section className='dataset-section'>
         <div>
-          <p className='eyebrow'>Dataset Explorer</p>
+          <p className='eyebrow'>Veri seti gezgini</p>
           <h2>Örnek veri dağılımı</h2>
         </div>
         <div className='dataset-bars'>
           {[
-            ['X-Ray', 42],
-            ['Rodent', 24],
-            ['Microscopy', 19],
-            ['Laboratory', 10],
-            ['Unknown', 5],
+            ['Röntgen', 42],
+            ['Kemirgen', 24],
+            ['Mikroskopi', 19],
+            ['Laboratuvar', 10],
+            ['Bilinmeyen', 5],
           ].map(([label, value]) => (
             <div key={label}>
               <span>{label}</span>
@@ -592,7 +594,7 @@ function App() {
         <article className='warning-panel'>
           <AlertTriangle />
           <div>
-            <strong>Medical Disclaimer</strong>
+            <strong>Tıbbi uyarı</strong>
             <p>Bu sistem kesin tıbbi tanı koymaz. Sonuçlar yalnızca ön değerlendirme ve eğitim amaçlıdır. Kesin tanı için uzman hekime başvurulmalıdır.</p>
           </div>
         </article>
@@ -631,10 +633,10 @@ function App() {
 
       <footer className='footer'>
         <strong>HantaVision AI</strong>
-        <span>Research/Education Purpose</span>
-        <a href='mailto:contact@hantavision.ai'>Contact</a>
-        <a href='#top'>Privacy Policy</a>
-        <a href='#top'>Medical Disclaimer</a>
+        <span>Araştırma/Eğitim Amaçlı</span>
+        <a href='mailto:contact@hantavision.ai'>İletişim</a>
+        <a href='#top'>Gizlilik Politikası</a>
+        <a href='#top'>Tıbbi Uyarı</a>
       </footer>
     </main>
   );
@@ -666,8 +668,8 @@ function CinematicBoot() {
     <div className='boot-screen' aria-hidden='true'>
       <div className='boot-frame'>
         <ScanLine />
-        <span>HantaVision AI boot sequence</span>
-        <strong>Neural Diagnostic System</strong>
+        <span>HantaVision AI başlatma dizisi</span>
+        <strong>Sinirsel Tanısal Sistem</strong>
         <div className='boot-log'>
           {bootLines.map((line) => <small key={line}>{line}</small>)}
         </div>
@@ -677,7 +679,7 @@ function CinematicBoot() {
   );
 }
 
-function HeroVisual({ modelStatus }) {
+function HeroVisual({ modelStatus, diagnosticReady }) {
   return (
     <div className='hero-visual' aria-label='Holografik medikal görüntü motoru'>
       <div className='data-stream' aria-hidden='true'>
@@ -699,14 +701,14 @@ function HeroVisual({ modelStatus }) {
         {floatingAiCards.map(([label, value]) => (
           <article key={label}>
             <small>{label}</small>
-            <strong>{label === 'Model Gate' && modelStatus?.acceptsUploads ? 'Validated Live' : value}</strong>
+            <strong>{label === 'Model Kapısı' && diagnosticReady ? 'Doğrulanmış canlı' : value}</strong>
           </article>
         ))}
       </div>
       <div className='system-status'>
-        <span><CheckCircle2 />AI Core: Active</span>
-        <span><CheckCircle2 />Medical Vision Engine: Online</span>
-        <span><CheckCircle2 />Validated Model Gate: Strict</span>
+        <span><CheckCircle2 />AI çekirdeği: Aktif</span>
+        <span><CheckCircle2 />Medikal görüntü motoru: Çevrimiçi</span>
+        <span><CheckCircle2 />Doğrulanmış model kapısı: Sıkı mod</span>
       </div>
     </div>
   );
@@ -719,7 +721,7 @@ function AnalysisProgress({ loading, progress, activeStep }) {
         <Cpu />
         <div>
           <span>Analiz logları</span>
-          <strong>{loading ? 'Medical Vision Engine çalışıyor' : 'Hazır'}</strong>
+          <strong>{loading ? 'Medikal görüntü motoru çalışıyor' : 'Hazır'}</strong>
         </div>
       </div>
       <div className='progress-track'><i style={{ width: `${progress}%` }} /></div>
@@ -732,11 +734,11 @@ function AnalysisProgress({ loading, progress, activeStep }) {
         ))}
       </ol>
       <div className='terminal-lines'>
-        <span>Scanning image...</span>
-        <span>Extracting pulmonary patterns...</span>
-        <span>Loading model weights...</span>
-        <span>Running EfficientNet...</span>
-        <span>Generating diagnostic report...</span>
+        <span>Görüntü taranıyor...</span>
+        <span>Pulmoner örüntüler çıkarılıyor...</span>
+        <span>Model ağırlıkları yükleniyor...</span>
+        <span>EfficientNet çalıştırılıyor...</span>
+        <span>Tanısal araştırma raporu oluşturuluyor...</span>
       </div>
     </article>
   );
@@ -744,7 +746,8 @@ function AnalysisProgress({ loading, progress, activeStep }) {
 
 function HeatmapPreview({ file, previewUrl, result, inferred, loading }) {
   const hasValidatedHeatmap = result?.attention?.regions?.length && isValidatedAnalysis(result);
-  const regions = hasValidatedHeatmap ? result.attention.regions : file ? syntheticRegions(inferred.route) : [];
+  const previewRegions = result?.attention?.regions?.length ? result.attention.regions : file ? syntheticRegions(inferred.route) : [];
+  const regions = hasValidatedHeatmap ? result.attention.regions : previewRegions;
   return (
     <article className='heatmap-panel'>
       <div className='panel-title'>
@@ -770,9 +773,9 @@ function HeatmapPreview({ file, previewUrl, result, inferred, loading }) {
       </div>
       <p className='heatmap-note'>
         {hasValidatedHeatmap
-          ? 'Validated Grad-CAM output generated by the active model.'
+          ? 'Aktif model tarafından doğrulanmış Grad-CAM çıktısı üretildi.'
           : file
-            ? 'Grad-CAM scan preview active. Validated heatmap locks to real model output after approved artifact.'
+            ? 'Grad-CAM tarama önizlemesi aktif. Onaylı artefact eklendiğinde gerçek model çıktısına kilitlenir.'
             : 'Görüntü ve model sonucu bekleniyor.'}
       </p>
     </article>
@@ -781,32 +784,32 @@ function HeatmapPreview({ file, previewUrl, result, inferred, loading }) {
 
 function ReportPanel({ latest, displayedImageType, selectedModel, modelArchitecture, onDownloadPdf }) {
   const validated = isValidatedAnalysis(latest);
-  const detectedRegions = validated ? latest?.attention?.regions?.length || 0 : 'Locked';
+  const detectedRegions = validated ? latest?.attention?.regions?.length || 0 : 'Model bekliyor';
   return (
     <section className='report-panel'>
       <div className='report-header'>
         <div>
-          <p className='eyebrow'>AI Diagnostic Report</p>
-          <h2>{latest ? (validated ? latest.hantavirusResult : 'Legacy demo sonucu gizlendi') : 'Analiz sonucu bekleniyor'}</h2>
+          <p className='eyebrow'>AI Tanısal Araştırma Raporu</p>
+          <h2>{latest ? (validated ? latest.hantavirusResult : 'Görüntü kabul edildi; doğrulanmış model bekleniyor') : 'Analiz sonucu bekleniyor'}</h2>
         </div>
         <span className={`risk-badge ${riskClass(latest)}`}>Risk Durumu: {riskLabel(latest)}</span>
       </div>
       <div className='report-metrics'>
-        <div><span>Risk Level</span><strong>{riskLabel(latest)}</strong></div>
-        <div><span>Confidence</span><strong>{latest ? (validated ? formatPercent(latest.confidence) : 'Legacy') : 'Beklemede'}</strong></div>
-        <div><span>Detected Regions</span><strong>{detectedRegions}</strong></div>
-        <div><span>Model Used</span><strong>{modelArchitecture}</strong></div>
-        <div><span>Processing Time</span><strong>{latest ? '2.4 seconds' : 'Beklemede'}</strong></div>
+        <div><span>Risk Seviyesi</span><strong>{riskLabel(latest)}</strong></div>
+        <div><span>Güven Skoru</span><strong>{latest ? (validated ? formatPercent(latest.confidence) : 'Model bekliyor') : 'Beklemede'}</strong></div>
+        <div><span>Tespit Edilen Bölgeler</span><strong>{detectedRegions}</strong></div>
+        <div><span>Kullanılan Model</span><strong>{modelArchitecture}</strong></div>
+        <div><span>İşlem Süresi</span><strong>{latest ? '2.4 saniye' : 'Beklemede'}</strong></div>
       </div>
       <div className='explain-panel'>
         <FlaskConical />
         <div>
-          <span>Explainable AI</span>
-          <p>{latest ? (validated ? latest.explanation : 'Bu eski kayıt validasyonlu model runtime bilgisi taşımıyor. Profesyonel modda yeni analizler yalnızca onaylı model artefact ile raporlanır.') : 'Validated output example: “The model detected opacity patterns associated with hantavirus pulmonary syndrome.” Gerçek açıklama, onaylı CNN/ResNet/EfficientNet artefact yüklendikten sonra burada model kanıtıyla gösterilir.'}</p>
+          <span>Açıklanabilir AI</span>
+          <p>{latest ? (validated ? latest.explanation : 'Görüntü başarıyla kabul edildi. Profesyonel modda doğrulanmış model artefact olmadan tıbbi risk sonucu üretilmez; model eklendiğinde açıklama burada kanıtıyla gösterilir.') : 'Doğrulanmış çıktı örneği: “Model, hantavirüs pulmoner sendromuyla ilişkili opasite örüntülerini tespit etti.” Gerçek açıklama, onaylı CNN/ResNet/EfficientNet artefact yüklendikten sonra burada model kanıtıyla gösterilir.'}</p>
         </div>
       </div>
       <div className='report-actions'>
-        <button type='button' className='primary-action' onClick={onDownloadPdf} disabled={!latest}><Download />AI Medical Report PDF</button>
+        <button type='button' className='primary-action' onClick={onDownloadPdf} disabled={!latest}><Download />AI Medikal Rapor PDF</button>
         <span>Model seçimi: {selectedModel}</span>
       </div>
     </section>
@@ -867,7 +870,7 @@ function HistoryPanel({ history: items, setResult, onDownloadPdf }) {
             <span>{formatDate(item.createdAt)}</span>
             <span>{normalizeImageType(item.imageType)}</span>
             <span>{riskLabel(item)}</span>
-            <span>{isValidatedAnalysis(item) ? formatPercent(item.confidence) : 'Legacy'}</span>
+            <span>{isValidatedAnalysis(item) ? formatPercent(item.confidence) : 'Model bekliyor'}</span>
             <span onClick={(event) => { event.stopPropagation(); onDownloadPdf(); }}><Download />Rapor görüntüle</span>
           </button>
         ))}
