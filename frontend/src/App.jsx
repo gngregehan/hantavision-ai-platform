@@ -48,15 +48,41 @@ import {
 const initialAuth = { fullName: '', email: 'admin@hantavision.local', password: 'ChangeMe!2026' };
 
 const analysisSteps = [
-  'Görüntü alındı',
-  'Görüntü ön işleniyor',
-  'Gürültü azaltılıyor',
-  'Yapay zeka modeli çalıştırılıyor',
-  'Risk skoru hesaplanıyor',
-  'Rapor oluşturuluyor',
+  'Scanning image...',
+  'Preprocessing biomedical matrix...',
+  'Extracting pulmonary patterns...',
+  'Loading model route...',
+  'Running EfficientNet / ResNet...',
+  'Generating diagnostic report...',
 ];
 
 const techStack = ['Python', 'OpenCV', 'TensorFlow / PyTorch', 'CNN', 'ResNet', 'EfficientNet', 'Grad-CAM', 'React', 'FastAPI'];
+
+const bootLines = [
+  'Initializing Neural Diagnostic System...',
+  'Connecting Medical Vision Engine...',
+  'AI Core Online',
+];
+
+const liveDataStream = [
+  'VISION BUS 07: ONLINE',
+  'BIO-SCAN LATENCY: 18MS',
+  'MODEL ROUTER: STRICT',
+  'GRAD-CAM CHANNEL: READY',
+  'DATA VAULT: ENCRYPTED',
+];
+
+const floatingAiCards = [
+  ['AI Status', 'Core Online'],
+  ['Vision Engine', 'Standby'],
+  ['Model Gate', 'Validated Only'],
+];
+
+const modelRoutes = [
+  ['X-Ray', 'ResNet', 'pulmonary opacity analysis'],
+  ['Rodent', 'YOLO', 'reservoir-host detection'],
+  ['Microscope', 'EfficientNet', 'infected-cell microscopy'],
+];
 
 const riskLevels = [
   ['Düşük Risk', 'Belirgin bulgu yok'],
@@ -111,20 +137,20 @@ function inferImageType(file) {
 
 function modelForType(value) {
   const label = normalizeImageType(value);
-  if (label === 'Akciğer Röntgeni') return 'Medical CNN Model';
-  if (label === 'Kemirgen Fotoğrafı') return 'Rodent Detection Model';
-  if (label === 'Mikroskop Görüntüsü') return 'Microscopy Model';
-  if (label === 'Laboratuvar Görüntüsü') return 'Laboratory Vision Model';
+  if (label === 'Akciğer Röntgeni') return 'ResNet Pulmonary Model';
+  if (label === 'Kemirgen Fotoğrafı') return 'YOLO Rodent Detector';
+  if (label === 'Mikroskop Görüntüsü') return 'EfficientNet Microscopy Model';
+  if (label === 'Laboratuvar Görüntüsü') return 'CNN Laboratory Classifier';
   return 'Expert Review Router';
 }
 
 function architectureForType(value) {
   const label = normalizeImageType(value);
-  if (label === 'Akciğer Röntgeni') return 'EfficientNet / ResNet / CNN';
-  if (label === 'Kemirgen Fotoğrafı') return 'ResNet-50 Detector';
-  if (label === 'Mikroskop Görüntüsü') return 'Vision Transformer + CNN';
+  if (label === 'Akciğer Röntgeni') return 'ResNet-50';
+  if (label === 'Kemirgen Fotoğrafı') return 'YOLO Detector';
+  if (label === 'Mikroskop Görüntüsü') return 'EfficientNet-B0';
   if (label === 'Laboratuvar Görüntüsü') return 'CNN Ensemble';
-  return 'Expert Review Ensemble';
+  return 'Expert Review Router';
 }
 
 function isValidatedAnalysis(item) {
@@ -199,6 +225,10 @@ function App() {
   const selectedModel = installedArchitecture ? `Validated ${installedArchitecture}` : modelForType(displayedImageType);
   const modelArchitecture = installedArchitecture || architectureForType(displayedImageType);
   const totalAnalyses = overview?.totalAnalyses ?? history.length;
+  const detectionAccuracy = modelStatus?.runtime?.metrics?.accuracy
+    ? formatPercent(modelStatus.runtime.metrics.accuracy)
+    : 'Metrics pending';
+  const threatLevel = latest && isValidatedAnalysis(latest) ? riskLabel(latest) : 'Gated';
   const avgConfidence = history.length
     ? history.reduce((sum, item) => sum + (Number(item.confidence) || 0), 0) / history.length
     : Number(latest?.confidence) || 0;
@@ -364,11 +394,11 @@ function App() {
   }
 
   const dashboardCards = [
-    { label: 'Toplam Analiz', value: totalAnalyses, icon: FileSearch },
-    { label: 'Aktif AI Modeli', value: selectedModel, icon: BrainCircuit },
-    { label: 'Ortalama Güven Skoru', value: formatPercent(avgConfidence), icon: Gauge },
-    { label: 'Desteklenen Görsel Türü', value: '5 sınıf', icon: Layers3 },
-    { label: 'Sistem Durumu', value: modelStatus?.acceptsUploads ? 'Validated' : 'Model gerekli', icon: Activity },
+    { label: 'Active Models', value: modelStatus?.acceptsUploads ? '3 live' : '3 staged', icon: BrainCircuit },
+    { label: 'Total Scans', value: totalAnalyses, icon: FileSearch },
+    { label: 'AI Status', value: modelStatus?.acceptsUploads ? 'Validated' : 'Strict Gate', icon: Activity },
+    { label: 'Threat Level', value: threatLevel, icon: Gauge },
+    { label: 'Detection Accuracy', value: detectionAccuracy, icon: LineChart },
   ];
 
   return (
@@ -378,10 +408,11 @@ function App() {
 
       <section className='hero-section' id='top'>
         <div className='hero-copy'>
+          <p className='dev-mark'>DEV</p>
           <p className='eyebrow'>Modern Medical AI Research Platform</p>
-          <h1>HantaVision AI</h1>
-          <p className='hero-lead'>AI destekli hantavirüs görüntü analiz platformu</p>
-          <p className='hero-subtitle'>Next-Generation Medical Image Intelligence</p>
+          <h1>HANTAVISION AI</h1>
+          <p className='hero-subtitle'>Next-Generation Biological Threat Detection Platform</p>
+          <p className='hero-lead'>AI destekli biyolojik tehdit ve hantavirüs görüntü analiz platformu</p>
           <p className='hero-description'>
             Bu sistem akciğer röntgeni, kemirgen görüntüsü ve mikroskobik görüntüleri analiz ederek hantavirüs ile ilişkili riskleri yapay zeka destekli olarak değerlendirir.
           </p>
@@ -397,7 +428,7 @@ function App() {
             ))}
           </div>
         </div>
-        <HeroVisual />
+        <HeroVisual modelStatus={modelStatus} />
       </section>
 
       <section className='dashboard-strip' aria-label='Sistem istatistikleri'>
@@ -500,8 +531,14 @@ function App() {
           <p className='eyebrow'>Model bilgisi</p>
           <h2>Görüntü sınıflandırma ve açıklanabilir AI</h2>
           <p>Bu sistem görüntü sınıflandırma, ön işleme, segmentasyon ve açıklanabilir yapay zeka tekniklerini kullanır.</p>
+          <div className='model-route-table' aria-label='Multi-model routing'>
+            <div><strong>Input</strong><strong>Model</strong><strong>Route</strong></div>
+            {modelRoutes.map(([input, model, route]) => (
+              <div key={input}><span>{input}</span><span>{model}</span><span>{route}</span></div>
+            ))}
+          </div>
           <div className='model-comparison'>
-            {['ResNet', 'EfficientNet', 'Vision Transformer', 'CNN Ensemble'].map((model) => <span key={model}>{model}</span>)}
+            {['ResNet', 'YOLO', 'EfficientNet', 'CNN Ensemble'].map((model) => <span key={model}>{model}</span>)}
           </div>
         </article>
       </section>
@@ -629,24 +666,42 @@ function CinematicBoot() {
     <div className='boot-screen' aria-hidden='true'>
       <div className='boot-frame'>
         <ScanLine />
-        <span>Initializing HantaVision AI</span>
-        <strong>GNGREGEHAN SUNAR</strong>
+        <span>HantaVision AI boot sequence</span>
+        <strong>Neural Diagnostic System</strong>
+        <div className='boot-log'>
+          {bootLines.map((line) => <small key={line}>{line}</small>)}
+        </div>
         <i />
       </div>
     </div>
   );
 }
 
-function HeroVisual() {
+function HeroVisual({ modelStatus }) {
   return (
     <div className='hero-visual' aria-label='Holografik medikal görüntü motoru'>
+      <div className='data-stream' aria-hidden='true'>
+        {liveDataStream.map((line) => <span key={line}>{line}</span>)}
+      </div>
       <div className='holo-stage'>
         <div className='holo-lung left' />
         <div className='holo-lung right' />
         <div className='holo-spine' />
+        <div className='scan-plane' />
         <div className='virus-core'><Zap /></div>
         <div className='scan-ring ring-one' />
         <div className='scan-ring ring-two' />
+        <span className='particle-dot dot-one' />
+        <span className='particle-dot dot-two' />
+        <span className='particle-dot dot-three' />
+      </div>
+      <div className='floating-ai-cards'>
+        {floatingAiCards.map(([label, value]) => (
+          <article key={label}>
+            <small>{label}</small>
+            <strong>{label === 'Model Gate' && modelStatus?.acceptsUploads ? 'Validated Live' : value}</strong>
+          </article>
+        ))}
       </div>
       <div className='system-status'>
         <span><CheckCircle2 />AI Core: Active</span>
@@ -677,17 +732,19 @@ function AnalysisProgress({ loading, progress, activeStep }) {
         ))}
       </ol>
       <div className='terminal-lines'>
-        <span>Image preprocessing...</span>
-        <span>Feature extraction...</span>
-        <span>Validated model gate...</span>
-        <span>Metrics-backed report check...</span>
+        <span>Scanning image...</span>
+        <span>Extracting pulmonary patterns...</span>
+        <span>Loading model weights...</span>
+        <span>Running EfficientNet...</span>
+        <span>Generating diagnostic report...</span>
       </div>
     </article>
   );
 }
 
 function HeatmapPreview({ file, previewUrl, result, inferred, loading }) {
-  const regions = result?.attention?.regions?.length ? result.attention.regions : [];
+  const hasValidatedHeatmap = result?.attention?.regions?.length && isValidatedAnalysis(result);
+  const regions = hasValidatedHeatmap ? result.attention.regions : file ? syntheticRegions(inferred.route) : [];
   return (
     <article className='heatmap-panel'>
       <div className='panel-title'>
@@ -699,7 +756,7 @@ function HeatmapPreview({ file, previewUrl, result, inferred, loading }) {
       </div>
       <div className={`image-scan ${loading ? 'is-scanning' : ''}`}>
         {previewUrl ? <img src={previewUrl} alt='Yüklenen medikal görsel önizlemesi' /> : <div className='dicom-placeholder'><Microscope /><span>{file ? 'DICOM / önizleme dışı dosya' : 'Görüntü bekleniyor'}</span></div>}
-        <div className='heat-layer'>
+        <div className={`heat-layer ${hasValidatedHeatmap ? 'validated' : 'preview'}`}>
           {regions.map((region, index) => (
             <span
               key={`${region.label}-${index}`}
@@ -711,13 +768,20 @@ function HeatmapPreview({ file, previewUrl, result, inferred, loading }) {
         </div>
         <i className='scan-beam' />
       </div>
-      {!regions.length && <p className='heatmap-note'>{file ? 'Gerçek Grad-CAM alanı validasyonlu model sonucu gelince gösterilir.' : 'Görüntü ve model sonucu bekleniyor.'}</p>}
+      <p className='heatmap-note'>
+        {hasValidatedHeatmap
+          ? 'Validated Grad-CAM output generated by the active model.'
+          : file
+            ? 'Grad-CAM scan preview active. Validated heatmap locks to real model output after approved artifact.'
+            : 'Görüntü ve model sonucu bekleniyor.'}
+      </p>
     </article>
   );
 }
 
 function ReportPanel({ latest, displayedImageType, selectedModel, modelArchitecture, onDownloadPdf }) {
   const validated = isValidatedAnalysis(latest);
+  const detectedRegions = validated ? latest?.attention?.regions?.length || 0 : 'Locked';
   return (
     <section className='report-panel'>
       <div className='report-header'>
@@ -728,14 +792,18 @@ function ReportPanel({ latest, displayedImageType, selectedModel, modelArchitect
         <span className={`risk-badge ${riskClass(latest)}`}>Risk Durumu: {riskLabel(latest)}</span>
       </div>
       <div className='report-metrics'>
-        <div><span>Güven Skoru</span><strong>{latest ? (validated ? formatPercent(latest.confidence) : 'Legacy') : 'Beklemede'}</strong></div>
-        <div><span>Görüntü Türü</span><strong>{displayedImageType}</strong></div>
-        <div><span>Model</span><strong>{modelArchitecture}</strong></div>
-        <div><span>Analiz Süresi</span><strong>{latest ? '2.4 saniye' : 'Beklemede'}</strong></div>
+        <div><span>Risk Level</span><strong>{riskLabel(latest)}</strong></div>
+        <div><span>Confidence</span><strong>{latest ? (validated ? formatPercent(latest.confidence) : 'Legacy') : 'Beklemede'}</strong></div>
+        <div><span>Detected Regions</span><strong>{detectedRegions}</strong></div>
+        <div><span>Model Used</span><strong>{modelArchitecture}</strong></div>
+        <div><span>Processing Time</span><strong>{latest ? '2.4 seconds' : 'Beklemede'}</strong></div>
       </div>
       <div className='explain-panel'>
         <FlaskConical />
-        <p>{latest ? (validated ? latest.explanation : 'Bu eski kayıt validasyonlu model runtime bilgisi taşımıyor. Profesyonel modda yeni analizler yalnızca onaylı model artefact ile raporlanır.') : 'Profesyonel modda sahte bulgu üretilmez. Gerçek açıklama, validasyonlu CNN/ResNet/EfficientNet artefact yüklendikten ve analiz tamamlandıktan sonra burada gösterilir.'}</p>
+        <div>
+          <span>Explainable AI</span>
+          <p>{latest ? (validated ? latest.explanation : 'Bu eski kayıt validasyonlu model runtime bilgisi taşımıyor. Profesyonel modda yeni analizler yalnızca onaylı model artefact ile raporlanır.') : 'Validated output example: “The model detected opacity patterns associated with hantavirus pulmonary syndrome.” Gerçek açıklama, onaylı CNN/ResNet/EfficientNet artefact yüklendikten sonra burada model kanıtıyla gösterilir.'}</p>
+        </div>
       </div>
       <div className='report-actions'>
         <button type='button' className='primary-action' onClick={onDownloadPdf} disabled={!latest}><Download />AI Medical Report PDF</button>
