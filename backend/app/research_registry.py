@@ -74,6 +74,22 @@ REFERENCE_MEDIA: list[dict[str, Any]] = [
 
 AUXILIARY_DATASETS: list[dict[str, Any]] = [
     {
+        "id": "kaggle-jakabcsatri-viruses-ncbi",
+        "name": "NCBI kaynaklı virus veri seti",
+        "source": "Kaggle / NCBI",
+        "url": "https://www.kaggle.com/datasets/jakabcsatri/viruses-ncbi",
+        "modality": "virus genom/metadata veri seti",
+        "labelSignal": (
+            "Genel virus sınıflandırma ve NCBI kaynaklı taksonomi/sequence bilgisi; "
+            "Hantaviridae kayıtları filtrelenerek genomik model kanıtı için kullanılabilir."
+        ),
+        "trainingSuitability": (
+            "Hocanın verdiği kaynak sisteme eklendi. Bu kaynak görüntü etiketi taşımadığı için "
+            "CNN/ResNet/EfficientNet görüntü modelini tek başına doğrulamaz; sequence/taksonomi modeli için uygundur."
+        ),
+        "status": "teacher-provided-genomic-source",
+    },
+    {
         "id": "kaggle-hantavirus-search",
         "name": "Kaggle hantavirüs veri seti araması",
         "source": "Kaggle Datasets",
@@ -207,6 +223,12 @@ BIBLIOGRAPHY: list[dict[str, str]] = [
         "note": "Olası kaynak olarak kontrol edildi; manuel veri seti doğrulaması olmadan hantavirüse özel klinik görüntü benchmark'ı iddia edilmez.",
     },
     {
+        "title": "Viruses dataset from NCBI",
+        "publisher": "Kaggle / NCBI",
+        "url": "https://www.kaggle.com/datasets/jakabcsatri/viruses-ncbi",
+        "note": "Hocanın önerdiği NCBI kökenli genel virus veri seti; görüntü modeli değil, genom/taksonomi kanıt katmanı için eklendi.",
+    },
+    {
         "title": "iRodent: a keypoint and segmentation dataset of rodents in the wild",
         "publisher": "Zenodo",
         "url": "https://zenodo.org/records/8250392",
@@ -246,13 +268,26 @@ def assistant_reply(message: str, context: dict[str, Any] | None = None) -> dict
     risk = context.get("risk") or "beklemede"
     image_type = context.get("imageType") or "gorsel henuz secilmedi"
     model = context.get("model") or "otomatik model yönlendirici"
+    mode = context.get("mode") or "araştırma modu"
+    model_ready = bool(context.get("modelReady"))
 
-    if any(word in text for word in ["veri", "dataset", "kaynak", "egitim", "eğitim"]):
+    if any(word in text for word in ["selam", "merhaba", "naber", "nasılsın", "nasilsin"]):
+        reply = (
+            "Merhaba knk, buradayım. Bana görüntü sonucu, model, veri seti, Kaggle/NCBI kaynağı, PDF rapor, "
+            "hantavirüs bilgisi veya hocaya nasıl anlatılacağı hakkında istediğin gibi sorabilirsin."
+        )
+    elif any(word in text for word in ["kaggle", "ncbi", "jakab", "viruses"]):
+        reply = (
+            "Hocanın verdiği Kaggle NCBI virus veri seti sisteme kaynak olarak eklendi. Bu kaynak genel virus "
+            "genom/metadata tarafını güçlendirir ve Hantaviridae filtreleme için kullanılabilir; fakat görüntü "
+            "etiketi taşımadığı için akciğer röntgeni veya mikroskopi CNN modelini tek başına doğrulamaz."
+        )
+    elif any(word in text for word in ["veri", "dataset", "kaynak", "egitim", "eğitim"]):
         reply = (
             "Bu platformda sadece hantavirüs ilişkili kaynaklar listeleniyor: Zenodo enfekte hücre "
             "mikroskopi seti ana eğitim adayı, Dryad SEOV/HTNV verisi destekleyici kaynak, CDC PHIL "
-            "görselleri ise referans medyadır. Kaggle sonucu doğrulanmış hanta etiketli klinik görsel "
-            "seti olarak kullanılmıyor; veri seti bağlantısı elle kanıtlanmadan eğitime alınmaz."
+            "görselleri ise referans medyadır. Kaggle NCBI virus veri seti genom/taksonomi kanıt katmanı "
+            "olarak eklendi; görüntü modeli doğrulaması için ayrı etiketli görüntü verisi gerekir."
         )
     elif any(word in text for word in ["metrik", "accuracy", "dogrulama", "doğrulama", "basari", "başarı"]):
         reply = (
@@ -276,10 +311,28 @@ def assistant_reply(message: str, context: dict[str, Any] | None = None) -> dict
             "HantaVision kesin tıbbi tanı koymaz. Hantavirüs şüphesinde resmi tanı klinik değerlendirme "
             "ve laboratuvar testleriyle yapılmalıdır."
         )
+    elif any(word in text for word in ["tasarım", "tasarim", "sunum", "hoca", "anlat"]):
+        reply = (
+            "Hocaya şöyle anlatabilirsin: sistem önce görüntüyü güvenli biçimde kabul ediyor, kalite ve tür "
+            "analizi yapıyor, uygun model rotasını seçiyor, doğrulanmış model varsa risk raporu ve Grad-CAM "
+            "üretiyor. Doğrulanmış model yoksa sahte sonuç üretmeyip model bekleniyor diyor; bu profesyonel "
+            "medikal AI davranışıdır."
+        )
+    elif any(word in text for word in ["pdf", "rapor", "indir", "export"]):
+        reply = (
+            "PDF rapor; yüklenen dosya adı, görüntü türü, risk durumu, güven skoru, kalite skoru, model bilgisi, "
+            "açıklama ve tıbbi uyarıyı içerir. Rapor indirme butonu analiz kaydı oluştuktan sonra aktif olur."
+        )
+    elif any(word in text for word in ["mod", "mode", "clinical", "research", "educational", "klinik"]):
+        reply = (
+            f"Şu an seçili çalışma modu {mode}. Klinik mod daha ciddi rapor dilini, araştırma modu veri/model "
+            "kanıtlarını, eğitim modu ise açıklayıcı anlatımı öne çıkarır."
+        )
     else:
         reply = (
-            "Sorunu veri seti, model, risk, metrik veya rapor olarak sorabilirsin. Ben mevcut analiz "
-            "sonucunu ve yalnızca hantavirüs kaynaklı kanıt kayıt bilgisini kullanarak cevap veririm."
+            f"Sorunu anladım. Mevcut bağlam: görüntü türü {image_type}, model {model}, risk {risk}, "
+            f"doğrulanmış model durumu {'hazır' if model_ready else 'beklemede'}. İstersen bunu daha sade, "
+            "hoca sunumu diliyle veya teknik rapor diliyle açıklayabilirim."
         )
 
     return {

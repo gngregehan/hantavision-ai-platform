@@ -1,7 +1,3 @@
-.assistant-widget {
-  display: none !important;
-}
-
 .startup-evidence-layer {
   width: min(1240px, calc(100% - 36px));
   margin: 0 auto 28px;

@@ -57,6 +57,17 @@
   ],
   "auxiliaryDiscovery": [
     {
+      "id": "kaggle-jakabcsatri-viruses-ncbi",
+      "name": "Viruses dataset from NCBI",
+      "source": "Kaggle / NCBI",
+      "url": "https://www.kaggle.com/datasets/jakabcsatri/viruses-ncbi",
+      "kaggleSlug": "jakabcsatri/viruses-ncbi",
+      "status": "teacher-provided-genomic-source",
+      "allowedForTraining": false,
+      "allowedForSequenceModeling": true,
+      "notes": "Hocanın verdiği NCBI kökenli genel virus veri seti. Hantaviridae filtreleme, virus taksonomisi ve genom/metadata sınıflandırması için kullanılabilir; medikal görüntü CNN/ResNet/EfficientNet doğrulaması için doğrudan etiketli görüntü kaynağı değildir."
+    },
+    {
       "id": "kaggle-hantavirus-search",
       "name": "Kaggle hantavirus dataset search",
       "url": "https://www.kaggle.com/datasets?search=hantavirus",

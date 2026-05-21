@@ -70,6 +70,7 @@ def main() -> None:
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
     parser.add_argument("--out-dir", type=Path, default=Path("data/raw"))
     parser.add_argument("--include-auxiliary", action="store_true", help="Also download auxiliary non-diagnostic sources.")
+    parser.add_argument("--include-kaggle", action="store_true", help="Download verified Kaggle slugs stored in the manifest.")
     parser.add_argument(
         "--kaggle-slug",
         action="append",
@@ -84,6 +85,7 @@ def main() -> None:
     args.out_dir.mkdir(parents=True, exist_ok=True)
 
     downloads: list[dict[str, str]] = []
+    downloaded_kaggle_slugs: set[str] = set()
     for source in manifest.get("primaryTrainingSources", []):
         downloads.extend(download_zenodo_record(source, args.out_dir, dry_run))
 
@@ -91,16 +93,23 @@ def main() -> None:
         for source in manifest.get("auxiliaryDiscovery", []):
             if source.get("apiUrl"):
                 downloads.extend(download_zenodo_record(source, args.out_dir, dry_run))
+            if args.include_kaggle and source.get("kaggleSlug"):
+                slug = source["kaggleSlug"]
+                if slug not in downloaded_kaggle_slugs:
+                    downloads.append(download_kaggle_slug(slug, args.out_dir, dry_run))
+                    downloaded_kaggle_slugs.add(slug)
 
     for slug in args.kaggle_slug:
-        downloads.append(download_kaggle_slug(slug, args.out_dir, dry_run))
+        if slug not in downloaded_kaggle_slugs:
+            downloads.append(download_kaggle_slug(slug, args.out_dir, dry_run))
+            downloaded_kaggle_slugs.add(slug)
 
     output = {
         "dryRun": dry_run,
         "downloads": downloads,
         "warning": (
-            "Kaggle slugs are not trusted automatically. Only curate them into training data after "
-            "manual verification that labels are hantavirus-specific and licensing permits use."
+            "Kaggle kaynakları otomatik güvenilir kabul edilmez. Eğitim verisine almadan önce "
+            "etiketlerin hantavirüse uygun olduğu ve lisansın kullanıma izin verdiği manuel doğrulanmalıdır."
         ),
     }
     report_path = args.out_dir / "download_manifest.json"

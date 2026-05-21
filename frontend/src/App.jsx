@@ -33,6 +33,7 @@ import {
   Zap,
 } from 'lucide-react';
 import {
+  assistantChat,
   downloadReport,
   getModelStatus,
   getOverview,
@@ -44,6 +45,7 @@ import {
   saveSession,
   uploadAnalysis,
 } from './lib/api';
+import StartupEvidenceLayer from './StartupEvidenceLayer.jsx';
 
 const initialAuth = { fullName: '', email: 'admin@hantavision.local', password: 'ChangeMe!2026' };
 
@@ -100,6 +102,29 @@ const faqItems = [
 ];
 
 const modeOptions = ['Klinik Mod', 'Araştırma Modu', 'Eğitim Modu'];
+
+const introLogs = [
+  'Initializing AI models...',
+  'Loading medical classifiers...',
+  'Connecting neural network...',
+  'System ready.',
+];
+
+const heroCapabilities = ['X-Ray Analysis', 'Rodent Detection', 'Microscopic Classification', 'Medical AI Reports'];
+
+const liveDetectionLogs = [
+  '[INFO] Scan initialized',
+  '[INFO] Image normalized',
+  '[INFO] Feature extraction started',
+  '[SUCCESS] Detection completed',
+];
+
+const aiModels = [
+  ['CNN Detection', 'Mikroskopi başlangıç modeli', 'Metrik bekliyor'],
+  ['Medical Vision Transformer', 'Görüntü özellik analizi', 'Araştırma modu'],
+  ['Rodent Classification', 'Konak/rezervuar yönlendirme', 'Yardımcı model'],
+  ['X-Ray Analyzer', 'Akciğer radyografi ön tarama', 'Uzman veri bekliyor'],
+];
 
 function formatPercent(value) {
   return `${Math.round((Number(value) || 0) * 100)}%`;
@@ -201,6 +226,7 @@ function syntheticRegions(route) {
 }
 
 function App() {
+  const [route, setRoute] = useState(() => (window.location.pathname === '/dashboard' ? 'dashboard' : 'intro'));
   const [session, setSession] = useState(() => loadSession());
   const [auth, setAuth] = useState(initialAuth);
   const [authMode, setAuthMode] = useState('login');
@@ -219,7 +245,13 @@ function App() {
   const [booting, setBooting] = useState(true);
   const [assistantOpen, setAssistantOpen] = useState(false);
   const [assistantQuestion, setAssistantQuestion] = useState('Bu sonuç ne anlama geliyor?');
-  const [assistantAnswer, setAssistantAnswer] = useState('Sonuç seçildiğinde risk düzeyi, güven skoru ve model açıklamasını burada sadeleştiririm.');
+  const [assistantMessages, setAssistantMessages] = useState([
+    { role: 'assistant', text: 'Merhaba, ben HantaVision AI asistanı. Görüntü sonucu, veri seti, model, rapor, hantavirüs veya proje sunumu hakkında normal sohbet edebiliriz.' },
+  ]);
+  const [assistantBusy, setAssistantBusy] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  const [contrastMode, setContrastMode] = useState(false);
+  const [voiceEnabled, setVoiceEnabled] = useState(false);
   const fileInputRef = useRef(null);
 
   const isAdmin = session?.user?.role === 'admin';
@@ -238,6 +270,17 @@ function App() {
   const avgConfidence = history.length
     ? history.reduce((sum, item) => sum + (Number(item.confidence) || 0), 0) / history.length
     : Number(latest?.confidence) || 0;
+
+  useEffect(() => {
+    const handlePop = () => setRoute(window.location.pathname === '/dashboard' ? 'dashboard' : 'intro');
+    window.addEventListener('popstate', handlePop);
+    return () => window.removeEventListener('popstate', handlePop);
+  }, []);
+
+  function enterSystem() {
+    window.history.pushState({}, '', '/dashboard');
+    setRoute('dashboard');
+  }
 
   useEffect(() => {
     const timer = window.setTimeout(() => setBooting(false), 2200);
@@ -329,6 +372,7 @@ function App() {
 
   function handleDrop(event) {
     event.preventDefault();
+    setDragging(false);
     handleFileSelect(event.dataTransfer.files?.[0]);
   }
 
@@ -396,21 +440,54 @@ function App() {
     setMessage('Oturum kapatıldı.');
   }
 
-  function handleAssistantSubmit(event) {
+  function speak(text) {
+    if (!voiceEnabled || !('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'tr-TR';
+    window.speechSynthesis.speak(utterance);
+  }
+
+  function toggleVoiceNavigation() {
+    setVoiceEnabled((value) => {
+      const next = !value;
+      if (!value && 'speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance('Sesli yönlendirme aktif. Sorularını AI asistana yazabilirsin.');
+        utterance.lang = 'tr-TR';
+        window.speechSynthesis.speak(utterance);
+      }
+      if (value && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+      return next;
+    });
+  }
+
+  async function handleAssistantSubmit(event) {
     event.preventDefault();
-    const question = assistantQuestion.toLocaleLowerCase('tr-TR');
-    if (question.includes('risk')) {
-      setAssistantAnswer(isValidatedAnalysis(latest)
-        ? `Bu analizde risk durumu ${riskLabel(latest)}. Güven skoru ${formatPercent(latest?.confidence || avgConfidence)} ve sonuç uzman değerlendirmesiyle doğrulanmalı.`
-        : 'Bu görüntü kabul edildi, fakat doğrulanmış model artefact olmadığı için tıbbi risk sonucu üretilmedi.');
-    } else if (question.includes('model') || question.includes('nasıl')) {
-      setAssistantAnswer(diagnosticReady
-        ? `${selectedModel}, yüklü validasyonlu artefact üzerinden çalışır. Ön işleme, sınıflandırma ve artefact destekliyorsa Grad-CAM birlikte raporlanır.`
-        : 'Profesyonel mod aktif: sistem fotoğrafı kabul eder ve kaydeder, ama doğrulanmış model artefact yüklenmeden tıbbi risk sonucu üretmez. Önce etiketli hantavirüs verisiyle eğitim ve test metrikleri gerekiyor.');
-    } else if (question.includes('tanı')) {
-      setAssistantAnswer('Bu sistem kesin tıbbi tanı koymaz. Çıktı yalnızca ön değerlendirme ve eğitim amaçlıdır; kesin tanı için uzman hekime başvurulmalıdır.');
-    } else {
-      setAssistantAnswer('Sonuç; risk seviyesi, güven skoru, görüntü kalitesi ve açıklanabilir AI bulguları birlikte okunarak yorumlanır.');
+    const question = assistantQuestion.trim();
+    if (!question) return;
+    setAssistantQuestion('');
+    setAssistantMessages((items) => [...items, { role: 'user', text: question }]);
+    setAssistantBusy(true);
+    try {
+      const response = await assistantChat({
+        message: question,
+        context: {
+          risk: riskLabel(latest),
+          imageType: displayedImageType,
+          model: selectedModel,
+          mode: analysisMode,
+          modelReady: diagnosticReady,
+        },
+      });
+      const reply = response.reply || 'Yanıt üretilemedi ama sorun kaydedildi.';
+      setAssistantMessages((items) => [...items, { role: 'assistant', text: reply }]);
+      speak(reply);
+    } catch {
+      const fallback = 'Şu an API yanıtı alınamadı. Yine de görüntü, model, veri seti, rapor ve proje sunumu hakkında sorunu yazabilirsin; bağlantı gelince yanıtlar devam eder.';
+      setAssistantMessages((items) => [...items, { role: 'assistant', text: fallback }]);
+      speak(fallback);
+    } finally {
+      setAssistantBusy(false);
     }
   }
 
@@ -422,24 +499,32 @@ function App() {
     { label: 'Tespit Doğruluğu', value: detectionAccuracy, icon: LineChart },
   ];
 
+  if (route === 'intro') {
+    return <IntroPage onEnter={enterSystem} />;
+  }
+
   return (
-    <main className='app-shell'>
+    <main className={`app-shell ${contrastMode ? 'high-contrast' : ''}`}>
       {booting && <CinematicBoot />}
+      {loading && <WowScanOverlay />}
       <Header session={session} logout={logout} />
 
       <section className='hero-section' id='top'>
         <div className='hero-copy'>
           <p className='dev-mark'>DEV</p>
-          <p className='eyebrow'>Modern Medikal AI Araştırma Platformu</p>
-          <h1>HANTAVISION AI</h1>
-          <p className='hero-subtitle'>Yeni Nesil Biyolojik Tehdit Tespit Platformu</p>
-          <p className='hero-lead'>AI destekli biyolojik tehdit ve hantavirüs görüntü analiz platformu</p>
+          <p className='eyebrow'>HANTAVISION AI · Government AI Lab Interface</p>
+          <h1>Hantavirus Detection Through AI Vision</h1>
+          <p className='hero-subtitle'>Advanced Hantavirus Detection System</p>
+          <p className='hero-lead'>Medikal görüntü, kemirgen ve mikroskopi verisi için premium AI tespit deneyimi</p>
           <p className='hero-description'>
             Bu sistem akciğer röntgeni, kemirgen görüntüsü ve mikroskobik görüntüleri analiz ederek hantavirüs ile ilişkili riskleri yapay zeka destekli olarak değerlendirir.
           </p>
+          <div className='hero-capability-list'>
+            {heroCapabilities.map((item) => <span key={item}><CheckCircle2 />{item}</span>)}
+          </div>
           <div className='hero-actions'>
-            <a className='primary-action' href='#analysis'><UploadCloud />Görüntü Analiz Et</a>
-            <a className='secondary-action' href='#workflow'><FileText />Sistem Nasıl Çalışır?</a>
+            <a className='primary-action' href='#analysis'><UploadCloud />Start Detection</a>
+            <a className='secondary-action' href='#live-detection'><FileText />View AI Demo</a>
           </div>
           <div className='mode-selector' aria-label='Analiz modu'>
             {modeOptions.map((option) => (
@@ -470,7 +555,14 @@ function App() {
         </div>
 
         <div className='analysis-grid'>
-          <form className={`upload-zone ${file ? 'has-file' : ''}`} onSubmit={handleUpload} onDragOver={(event) => event.preventDefault()} onDrop={handleDrop}>
+          <form
+            className={`upload-zone ${file ? 'has-file' : ''} ${dragging ? 'is-dragging' : ''}`}
+            onSubmit={handleUpload}
+            onDragEnter={() => setDragging(true)}
+            onDragLeave={() => setDragging(false)}
+            onDragOver={(event) => event.preventDefault()}
+            onDrop={handleDrop}
+          >
             <input
               ref={fileInputRef}
               type='file'
@@ -478,10 +570,21 @@ function App() {
               onChange={(event) => handleFileSelect(event.target.files?.[0])}
             />
             <button type='button' className='upload-target' onClick={() => fileInputRef.current?.click()}>
+              <span className='neural-lines' aria-hidden='true' />
               <UploadCloud />
               <strong>Görüntüyü buraya sürükle veya yükle</strong>
               <span>{file ? file.name : 'PNG, JPG, JPEG, HEIC, DICOM desteği'}</span>
             </button>
+            {file && (
+              <div className='upload-file-card'>
+                <FileSearch />
+                <div>
+                  <strong>{file.name}</strong>
+                  <span>AI güven ölçeri hazırlanıyor · {Math.max(1, Math.round(file.size / 1024))} KB</span>
+                </div>
+                <i />
+              </div>
+            )}
             <div className='upload-meta'>
               <span>PNG</span>
               <span>JPG</span>
@@ -512,6 +615,17 @@ function App() {
 
         {message && <p className='message'>{message}</p>}
       </section>
+
+      <VisionProcessingPanel file={file} previewUrl={previewUrl} latest={latest} inferred={inferred} />
+      <LiveDetectionSection />
+      <AIModelsSection />
+      <LabCommandPanel latest={latest} diagnosticReady={diagnosticReady} detectionAccuracy={detectionAccuracy} />
+      <AccessibilityPanel
+        contrastMode={contrastMode}
+        setContrastMode={setContrastMode}
+        voiceEnabled={voiceEnabled}
+        toggleVoiceNavigation={toggleVoiceNavigation}
+      />
 
       <section className='report-layout'>
         <ReportPanel latest={latest} displayedImageType={displayedImageType} selectedModel={selectedModel} modelArchitecture={modelArchitecture} onDownloadPdf={handleDownloadPdf} />
@@ -627,6 +741,8 @@ function App() {
         </article>
       </section>
 
+      <StartupEvidenceLayer />
+
       <section className='faq-section'>
         <div className='section-heading'>
           <p className='eyebrow'>SSS</p>
@@ -647,7 +763,8 @@ function App() {
         setOpen={setAssistantOpen}
         question={assistantQuestion}
         setQuestion={setAssistantQuestion}
-        answer={assistantAnswer}
+        messages={assistantMessages}
+        busy={assistantBusy}
         onSubmit={handleAssistantSubmit}
       />
 
@@ -680,6 +797,41 @@ function Header({ session, logout }) {
         <a className='small-action' href='#auth'><LogIn />Giriş yap</a>
       )}
     </header>
+  );
+}
+
+function IntroPage({ onEnter }) {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setReady(true), 2800);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  return (
+    <main className='intro-page'>
+      <div className='intro-fog' aria-hidden='true' />
+      <div className='intro-grid' aria-hidden='true' />
+      <span className='intro-orbit orbit-a' aria-hidden='true' />
+      <span className='intro-orbit orbit-b' aria-hidden='true' />
+      <section className='intro-core' aria-label='HantaVision AI giriş ekranı'>
+        <div className='intro-logo'>
+          <Stethoscope />
+        </div>
+        <p className='intro-kicker'>DEV · MEDICAL CYBER LAB</p>
+        <h1>HantaVision AI</h1>
+        <p>Advanced AI Detection Platform</p>
+        <div className='intro-terminal' aria-live='polite'>
+          {introLogs.map((line, index) => (
+            <span key={line} style={{ animationDelay: `${index * 0.42}s` }}>{line}</span>
+          ))}
+        </div>
+        <button type='button' className={`enter-system ${ready ? 'ready' : ''}`} onClick={onEnter}>
+          <ScanLine />
+          ENTER SYSTEM
+        </button>
+      </section>
+    </main>
   );
 }
 
@@ -729,6 +881,19 @@ function HeroVisual({ modelStatus, diagnosticReady }) {
         <span><CheckCircle2 />AI çekirdeği: Aktif</span>
         <span><CheckCircle2 />Medikal görüntü motoru: Çevrimiçi</span>
         <span><CheckCircle2 />Doğrulanmış model kapısı: Sıkı mod</span>
+      </div>
+      <div className='hero-ai-preview' aria-label='Canlı AI önizleme'>
+        <div className='preview-xray'>
+          <span className='preview-lung left' />
+          <span className='preview-lung right' />
+          <i />
+        </div>
+        <div className='preview-report'>
+          <small>LIVE AI PREVIEW</small>
+          <strong>Potential Hantavirus Detected</strong>
+          <span>Confidence Score · 87%</span>
+          <em>Heatmap aktif · scan sürüyor</em>
+        </div>
       </div>
     </div>
   );
@@ -799,6 +964,128 @@ function HeatmapPreview({ file, previewUrl, result, inferred, loading }) {
             : 'Görüntü ve model sonucu bekleniyor.'}
       </p>
     </article>
+  );
+}
+
+function WowScanOverlay() {
+  return (
+    <div className='wow-scan-overlay' aria-hidden='true'>
+      <div className='wow-frame'>
+        <ScanLine />
+        <strong>AI SCAN ACTIVE</strong>
+        <span>Neural grid oluşturuluyor</span>
+        <i />
+      </div>
+    </div>
+  );
+}
+
+function VisionProcessingPanel({ file, previewUrl, latest, inferred }) {
+  const route = latest?.metrics?.runtime?.imageRoute || inferred.route;
+  const zones = latest?.attention?.regions?.length ? latest.attention.regions : file ? syntheticRegions(route) : syntheticRegions('unknown');
+  return (
+    <section className='vision-processing-panel' id='live-detection'>
+      <div className='section-heading'>
+        <p className='eyebrow'>Görüntü işleme hattı</p>
+        <h2>Original · Processed · Heatmap · Detection Zones</h2>
+        <p>Yüklenen veri, işleme katmanlarıyla yan yana gösterilir; gerçek Grad-CAM doğrulanmış model kurulduğunda bu panel model çıktısına kilitlenir.</p>
+      </div>
+      <div className='processing-grid'>
+        <article>
+          <span>Original image</span>
+          <div className='processing-frame original'>{previewUrl ? <img src={previewUrl} alt='Orijinal yüklenen görüntü' /> : <Microscope />}</div>
+        </article>
+        <article>
+          <span>Processed image</span>
+          <div className='processing-frame processed'>{previewUrl ? <img src={previewUrl} alt='Ön işlenmiş görüntü' /> : <Cpu />}</div>
+        </article>
+        <article>
+          <span>Heatmap</span>
+          <div className='processing-frame heat'>{zones.map((zone, index) => <i key={index} style={{ left: `${zone.x}%`, top: `${zone.y}%`, width: `${zone.w}%`, height: `${zone.h}%` }} />)}</div>
+        </article>
+        <article>
+          <span>AI explanation</span>
+          <div className='processing-notes'>
+            <strong>{latest ? latest.hantavirusResult : 'Analiz bekleniyor'}</strong>
+            <p>{latest ? latest.explanation : 'Sistem görüntü kalitesi, modalite rotası, model kapısı ve açıklanabilir AI adımlarını tek raporda birleştirir.'}</p>
+          </div>
+        </article>
+      </div>
+    </section>
+  );
+}
+
+function LiveDetectionSection() {
+  return (
+    <section className='live-detection-section'>
+      <div>
+        <p className='eyebrow'>Live Detection</p>
+        <h2>Canlı AI terminali</h2>
+      </div>
+      <div className='live-terminal'>
+        {liveDetectionLogs.map((line) => <span key={line}>{line}</span>)}
+      </div>
+    </section>
+  );
+}
+
+function AIModelsSection() {
+  return (
+    <section className='ai-models-section'>
+      <div className='section-heading'>
+        <p className='eyebrow'>AI Models</p>
+        <h2>Doğrulama bekleyen çok modelli katman</h2>
+        <p>CNN, vision transformer, kemirgen sınıflandırma ve röntgen analiz kartları tek panelde gösterilir; metrikler gerçek eğitim koşusundan sonra açılır.</p>
+      </div>
+      <div className='ai-model-grid'>
+        {aiModels.map(([name, detail, metric]) => (
+          <article key={name}>
+            <BrainCircuit />
+            <span>{name}</span>
+            <p>{detail}</p>
+            <strong>{metric}</strong>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function LabCommandPanel({ latest, diagnosticReady, detectionAccuracy }) {
+  return (
+    <section className='lab-command-panel'>
+      <article>
+        <p className='eyebrow'>Government AI Lab</p>
+        <h2>Komuta paneli</h2>
+        <div className='lab-blocks'>
+          <span>AI Core <strong>Online</strong></span>
+          <span>Model Gate <strong>{diagnosticReady ? 'Doğrulanmış' : 'Beklemede'}</strong></span>
+          <span>Detection Accuracy <strong>{detectionAccuracy}</strong></span>
+          <span>Last Scan <strong>{latest ? riskLabel(latest) : 'Yok'}</strong></span>
+        </div>
+      </article>
+      <article className='mini-chart' aria-label='Mini sistem grafiği'>
+        {[42, 66, 58, 78, 64, 88, 72].map((value, index) => <i key={index} style={{ height: `${value}%` }} />)}
+      </article>
+    </section>
+  );
+}
+
+function AccessibilityPanel({ contrastMode, setContrastMode, voiceEnabled, toggleVoiceNavigation }) {
+  return (
+    <section className='accessibility-panel'>
+      <div>
+        <p className='eyebrow'>Accessibility</p>
+        <h2>Erişilebilir medikal arayüz</h2>
+        <p>Sesli yönlendirme, klavye navigasyonu, yüksek kontrast modu, screen reader etiketleri ve görünür focus göstergeleri desteklenir.</p>
+      </div>
+      <div className='accessibility-actions'>
+        <button type='button' className={voiceEnabled ? 'active' : ''} onClick={toggleVoiceNavigation}><Bot />Voice navigation</button>
+        <button type='button' className={contrastMode ? 'active' : ''} onClick={() => setContrastMode((value) => !value)}><Eye />Contrast mode</button>
+        <span><ShieldCheck />Keyboard navigation</span>
+        <span><FileText />Screen reader support</span>
+      </div>
+    </section>
   );
 }
 
@@ -899,7 +1186,7 @@ function HistoryPanel({ history: items, setResult, onDownloadPdf }) {
   );
 }
 
-function AssistantWidget({ open, setOpen, question, setQuestion, answer, onSubmit }) {
+function AssistantWidget({ open, setOpen, question, setQuestion, messages, busy, onSubmit }) {
   return (
     <div className={`assistant-widget ${open ? 'open' : ''}`}>
       {open && (
@@ -908,10 +1195,15 @@ function AssistantWidget({ open, setOpen, question, setQuestion, answer, onSubmi
             <span><Bot />AI asistan</span>
             <button type='button' onClick={() => setOpen(false)}><X /></button>
           </div>
-          <p>{answer}</p>
+          <div className='assistant-messages' aria-live='polite'>
+            {messages.map((item, index) => (
+              <p key={`${item.role}-${index}`} className={item.role}>{item.text}</p>
+            ))}
+            {busy && <p className='assistant'>Yanıt hazırlanıyor...</p>}
+          </div>
           <form onSubmit={onSubmit}>
-            <input value={question} onChange={(event) => setQuestion(event.target.value)} />
-            <button type='submit'><ChevronRight /></button>
+            <input value={question} onChange={(event) => setQuestion(event.target.value)} placeholder='Her şeyi sor: model, veri seti, rapor, hantavirüs...' />
+            <button type='submit' disabled={busy}><ChevronRight /></button>
           </form>
         </section>
       )}

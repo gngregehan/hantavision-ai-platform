@@ -1,16 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  Bot,
   BrainCircuit,
   CheckCircle2,
-  ChevronRight,
   Database,
   FileText,
   LineChart,
   ShieldCheck,
-  X,
 } from 'lucide-react';
-import { assistantChat, getModelStatus, getResearchEvidence } from './lib/api';
+import { getModelStatus, getResearchEvidence } from './lib/api';
 
 const fallbackEvidence = {
   mode: 'Yalnızca hantavirüs kanıt modu',
@@ -33,6 +30,7 @@ function statusLabel(value = '') {
     'curation ready': 'kürasyona hazır',
     'requires label curation': 'etiket kürasyonu gerekli',
     'manual verification required': 'manuel doğrulama gerekli',
+    'teacher provided genomic source': 'hocanın verdiği genomik kaynak',
     'pipeline ready': 'hat hazır',
     'pending real training run': 'gerçek eğitim koşusu bekleniyor',
     candidate: 'aday',
@@ -51,10 +49,6 @@ function metricValue(value) {
 export default function StartupEvidenceLayer() {
   const [evidence, setEvidence] = useState(fallbackEvidence);
   const [modelStatus, setModelStatus] = useState(null);
-  const [open, setOpen] = useState(false);
-  const [question, setQuestion] = useState('Veri seti ve metrikler gerçek mi?');
-  const [answer, setAnswer] = useState('Sorunu dataset, model, metrik veya risk olarak sorabilirsin. Yanıtlar hantavirüs kaynak kayıt sistemine göre verilir.');
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     getResearchEvidence()
@@ -71,27 +65,6 @@ export default function StartupEvidenceLayer() {
     { label: 'Doğrulama Metrikleri', value: modelStatus?.runtime?.ready ? 'Yüklü' : 'Beklemede', icon: LineChart },
     { label: 'Tahmin Kapısı', value: modelStatus?.acceptsDiagnosticPredictions ? 'Açık' : 'Model bekliyor', icon: ShieldCheck },
   ], [evidence, modelStatus]);
-
-  async function askAssistant(event) {
-    event.preventDefault();
-    if (!question.trim()) return;
-    setLoading(true);
-    try {
-      const response = await assistantChat({
-        message: question,
-        context: {
-          risk: 'araştırma modu',
-          imageType: 'hantavirüs kanıt kayıt sistemi',
-          model: 'CNN / ResNet-50 / EfficientNet-B0',
-        },
-      });
-      setAnswer(response.reply);
-    } catch {
-      setAnswer('AI asistan şu an API yanıtı alamadı; yine de sistemin kuralı net: sahte metrik yok, sadece hantavirüs kaynaklı veri ve eğitim sonrası doğrulama.');
-    } finally {
-      setLoading(false);
-    }
-  }
 
   return (
     <>
@@ -229,23 +202,6 @@ export default function StartupEvidenceLayer() {
           </div>
         </div>
       </section>
-
-      <div className={`startup-assistant ${open ? 'open' : ''}`}>
-        {open && (
-          <section>
-            <div>
-              <span><Bot />HantaVision AI Asistanı</span>
-              <button type='button' onClick={() => setOpen(false)}><X /></button>
-            </div>
-            <p>{loading ? 'Yanıt hazırlanıyor...' : answer}</p>
-            <form onSubmit={askAssistant}>
-              <input value={question} onChange={(event) => setQuestion(event.target.value)} />
-              <button type='submit' disabled={loading}><ChevronRight /></button>
-            </form>
-          </section>
-        )}
-        <button type='button' onClick={() => setOpen((value) => !value)}><Bot />AI asistan</button>
-      </div>
     </>
   );
 }
