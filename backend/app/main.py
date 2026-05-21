@@ -48,10 +48,10 @@ def get_current_user(token: str = Depends(oauth2_scheme)) -> dict:
     claims = decode_access_token(token)
     user_id = claims.get("sub")
     if user_id is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Oturum bilgisi gecersiz.")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Oturum bilgisi geçersiz.")
     user = store.get_user_by_id(str(user_id))
     if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Kullanici bulunamadi.")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Kullanıcı bulunamadı.")
     return user
 
 

@@ -114,6 +114,11 @@ function safeFileName(value) {
   return (value || 'hantavision-report').replace(/[^a-z0-9._-]+/gi, '-').replace(/^-+|-+$/g, '') || 'hantavision-report';
 }
 
+function isAuthError(message = '') {
+  const text = message.toLocaleLowerCase('tr-TR');
+  return text.includes('oturum') || text.includes('token') || text.includes('kullanıcı bulunamadı') || text.includes('kullanici bulunamadi');
+}
+
 function normalizeImageType(value = '') {
   const text = value.toLocaleLowerCase('tr-TR');
   if (text.includes('akciğer') || text.includes('x-ray') || text.includes('röntgen') || text.includes('rontgen')) return 'Akciğer Röntgeni';
@@ -279,6 +284,15 @@ function App() {
       }
       setModelStatus(await getModelStatus());
     } catch (error) {
+      if (isAuthError(error.message)) {
+        saveSession(null);
+        setSession(null);
+        setHistory([]);
+        setOverview(null);
+        setPerformance(null);
+        setMessage('Oturum süresi doldu. Lütfen tekrar giriş yap.');
+        return;
+      }
       setMessage(error.message);
     }
   }
@@ -341,6 +355,12 @@ function App() {
     } catch (error) {
       setProgress(0);
       setActiveStep(-1);
+      if (isAuthError(error.message)) {
+        saveSession(null);
+        setSession(null);
+        setMessage('Oturum süresi doldu. Lütfen tekrar giriş yapıp görüntüyü yeniden yükle.');
+        return;
+      }
       setMessage(error.message);
     } finally {
       setLoading(false);
